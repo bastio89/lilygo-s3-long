@@ -34,7 +34,8 @@ const LcdCmd kInitSequence[] = {
 constexpr uint8_t kCmdColumnAddress = 0x2A;
 constexpr uint8_t kCmdRowAddress = 0x2B;
 constexpr int kBacklightChannel = 0;
-constexpr lv_coord_t kDrawBufferLines = 40;
+constexpr lv_coord_t kDrawBufferLines = 16;
+constexpr uint8_t kTouchScrollLimit = 10;
 
 spi_device_handle_t g_spi = nullptr;
 lv_disp_draw_buf_t g_drawBuf;
@@ -220,6 +221,7 @@ bool displayBegin() {
     static lv_indev_drv_t indev;
     lv_indev_drv_init(&indev);
     indev.type = LV_INDEV_TYPE_POINTER;
+    indev.scroll_limit = kTouchScrollLimit;
     indev.read_cb = touchCb;
     lv_indev_drv_register(&indev);
 

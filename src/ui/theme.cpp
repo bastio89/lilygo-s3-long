@@ -65,6 +65,10 @@ lv_obj_t *button(lv_obj_t *parent, const char *caption, const lv_font_t *font, l
     lv_obj_set_style_radius(btn, 10, 0);
     lv_obj_set_style_bg_color(btn, panel(), 0);
     lv_obj_set_style_bg_color(btn, accent(), LV_STATE_PRESSED);
+    lv_obj_set_style_border_width(btn, 0, LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(btn, 0, LV_STATE_FOCUSED);
+    lv_obj_set_style_outline_width(btn, 0, LV_STATE_DEFAULT);
+    lv_obj_set_style_outline_width(btn, 0, LV_STATE_FOCUSED);
     lv_obj_set_style_shadow_width(btn, 0, 0);
 
     lv_obj_t *text = lv_label_create(btn);

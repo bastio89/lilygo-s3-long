@@ -5,7 +5,9 @@
 
 #include "core/clock.h"
 #include "core/network.h"
+#include "ui/commute_screen.h"
 #include "ui/desk_screen.h"
+#include "ui/printer_screen.h"
 #include "ui/settings_screen.h"
 #include "ui/theme.h"
 #include "ui/weather_screen.h"
@@ -17,7 +19,7 @@ namespace {
 constexpr uint32_t kToastMs = 2500;
 
 lv_obj_t *g_tiles = nullptr;
-lv_obj_t *g_tileObjects[3] = {};
+lv_obj_t *g_tileObjects[5] = {};
 lv_obj_t *g_clockLabel = nullptr;
 lv_obj_t *g_dateLabel = nullptr;
 lv_obj_t *g_titleLabel = nullptr;
@@ -28,7 +30,8 @@ uint8_t g_currentPage = UINT8_MAX;
 bool g_wifiOnline = false;
 bool g_wifiStateKnown = false;
 
-const char *const kPageTitles[3] = {"Schreibtisch", "Wetter", "Einstellungen"};
+const char *const kPageTitles[5] = {"Schreibtisch", "Wetter", "Pendelzeit", "Drucker",
+                                    "Einstellungen"};
 
 void buildStatusBar(lv_obj_t *parent) {
     lv_obj_t *bar = theme::plainBox(parent);
@@ -53,7 +56,7 @@ uint8_t currentPage() {
         return 0;
     }
     lv_obj_t *active = lv_tileview_get_tile_act(g_tiles);
-    for (uint8_t i = 0; i < 3; ++i) {
+    for (uint8_t i = 0; i < 5; ++i) {
         if (g_tileObjects[i] == active) {
             return i;
         }
@@ -85,11 +88,15 @@ void begin(desk::FlexiSpot &desk) {
 
     g_tileObjects[0] = lv_tileview_add_tile(g_tiles, 0, 0, LV_DIR_RIGHT);
     g_tileObjects[1] = lv_tileview_add_tile(g_tiles, 1, 0, LV_DIR_HOR);
-    g_tileObjects[2] = lv_tileview_add_tile(g_tiles, 2, 0, LV_DIR_LEFT);
+    g_tileObjects[2] = lv_tileview_add_tile(g_tiles, 2, 0, LV_DIR_HOR);
+    g_tileObjects[3] = lv_tileview_add_tile(g_tiles, 3, 0, LV_DIR_HOR);
+    g_tileObjects[4] = lv_tileview_add_tile(g_tiles, 4, 0, LV_DIR_LEFT);
 
     desk_screen::create(g_tileObjects[0], desk);
     weather_screen::create(g_tileObjects[1]);
-    settings_screen::create(g_tileObjects[2], desk);
+    commute_screen::create(g_tileObjects[2]);
+    printer_screen::create(g_tileObjects[3]);
+    settings_screen::create(g_tileObjects[4], desk);
 
     g_toast = lv_label_create(lv_layer_top());
     lv_obj_set_style_bg_color(g_toast, theme::accent(), 0);
@@ -114,7 +121,7 @@ void toast(const char *text) {
 }
 
 void showPage(uint8_t index) {
-    if (g_tiles != nullptr && index < 3) {
+    if (g_tiles != nullptr && index < 5) {
         lv_obj_set_tile(g_tiles, g_tileObjects[index], LV_ANIM_ON);
     }
 }
@@ -141,7 +148,9 @@ void tick(uint32_t nowMs) {
     switch (page) {
     case 0: desk_screen::tick(nowMs); break;
     case 1: weather_screen::tick(nowMs); break;
-    case 2: settings_screen::tick(nowMs); break;
+    case 2: commute_screen::tick(nowMs); break;
+    case 3: printer_screen::tick(nowMs); break;
+    case 4: settings_screen::tick(nowMs); break;
     default: break;
     }
 
