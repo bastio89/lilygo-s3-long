@@ -7,6 +7,17 @@
 
 namespace services {
 
+constexpr uint8_t kWeatherForecastDays = 3;
+
+struct WeatherForecastDay {
+  bool valid = false;
+  char date[11] = {};
+  float low = 0.0f;
+  float high = 0.0f;
+  int code = 0;
+  int precipitationProb = 0;
+};
+
 struct WeatherData {
     bool valid = false;
     float temperature = 0.0f;  // Grad C
@@ -17,6 +28,7 @@ struct WeatherData {
     float todayMin = 0.0f;
     float todayMax = 0.0f;
     int precipitationProb = 0; // Prozent
+    WeatherForecastDay forecast[kWeatherForecastDays];
     uint32_t updatedMs = 0;
 };
 

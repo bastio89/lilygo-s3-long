@@ -58,15 +58,17 @@ void WeatherService::loop(uint32_t nowMs) {
 bool WeatherService::fetch() {
     const core::Settings &cfg = core::settings();
 
-    char url[320];
+    char url[384];
     snprintf(url, sizeof(url),
              "https://api.open-meteo.com/v1/forecast"
              "?latitude=%.4f&longitude=%.4f"
              "&current=temperature_2m,relative_humidity_2m,apparent_temperature,"
              "weather_code,wind_speed_10m"
-             "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max"
-             "&timezone=auto&forecast_days=1",
-             static_cast<double>(cfg.latitude), static_cast<double>(cfg.longitude));
+             "&daily=weather_code,temperature_2m_max,temperature_2m_min,"
+             "precipitation_probability_max"
+             "&timezone=auto&forecast_days=%u",
+             static_cast<double>(cfg.latitude), static_cast<double>(cfg.longitude),
+             static_cast<unsigned>(kWeatherForecastDays + 1));
 
     log_i("Wetter-Abruf gestartet");
 
@@ -117,13 +119,34 @@ bool WeatherService::fetch() {
     data_.humidity = current["relative_humidity_2m"] | 0;
     data_.windKmh = current["wind_speed_10m"] | 0.0f;
     data_.code = current["weather_code"] | 0;
+    for (WeatherForecastDay &forecast : data_.forecast) {
+        forecast = WeatherForecastDay{};
+    }
+    uint8_t forecastDays = 0;
     if (!daily.isNull()) {
         data_.todayMax = daily["temperature_2m_max"][0] | data_.temperature;
         data_.todayMin = daily["temperature_2m_min"][0] | data_.temperature;
         data_.precipitationProb = daily["precipitation_probability_max"][0] | 0;
+        for (uint8_t index = 0; index < kWeatherForecastDays; ++index) {
+            const uint8_t sourceIndex = index + 1;
+            WeatherForecastDay &forecast = data_.forecast[index];
+            const char *date = daily["time"][sourceIndex] | "";
+            if (date[0] == '\0') {
+                continue;
+            }
+            snprintf(forecast.date, sizeof(forecast.date), "%s", date);
+            forecast.low = daily["temperature_2m_min"][sourceIndex] | data_.temperature;
+            forecast.high = daily["temperature_2m_max"][sourceIndex] | data_.temperature;
+            forecast.code = daily["weather_code"][sourceIndex] | 0;
+            forecast.precipitationProb =
+                daily["precipitation_probability_max"][sourceIndex] | 0;
+            forecast.valid = true;
+            ++forecastDays;
+        }
     }
     data_.valid = true;
     data_.updatedMs = millis();
+    log_i("Wetter-Abruf erfolgreich: %u Prognosetage", static_cast<unsigned>(forecastDays));
     return true;
 }
 
