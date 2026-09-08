@@ -46,7 +46,7 @@ void presetCb(lv_event_t *e) {
 
     if (lv_event_get_code(e) == LV_EVENT_LONG_PRESSED) {
         if (!core::presets().capture(index, *g_desk)) {
-            dashboard::toast("Keine Hoehe bekannt");
+            dashboard::toast("Keine Höhe bekannt");
             return;
         }
         core::settingsSave();
@@ -73,7 +73,7 @@ const char *moveResultText(desk::MoveResult result) {
     switch (result) {
     case desk::MoveResult::Reached: return "Ziel erreicht";
     case desk::MoveResult::Stalled: return "Blockiert - gestoppt";
-    case desk::MoveResult::TimedOut: return "Zeitueberschreitung";
+    case desk::MoveResult::TimedOut: return "Zeitüberschreitung";
     case desk::MoveResult::NoFeedback: return "Keine Rueckmeldung";
     default: return "bereit";
     }
@@ -156,9 +156,9 @@ void tick(uint32_t) {
         snprintf(status, sizeof(status), "Ziel %.1f cm",
                  static_cast<double>(g_desk->targetCm()));
     } else if (g_desk->motion() == desk::Motion::Up) {
-        snprintf(status, sizeof(status), "faehrt hoch");
+        snprintf(status, sizeof(status), "fährt hoch");
     } else if (g_desk->motion() == desk::Motion::Down) {
-        snprintf(status, sizeof(status), "faehrt runter");
+        snprintf(status, sizeof(status), "fährt runter");
     } else if (!g_desk->heightKnown()) {
         snprintf(status, sizeof(status), "Steuerbox meldet nichts");
     } else {

@@ -1,5 +1,7 @@
 #include "ui/theme.h"
 
+#include "ui/fonts.h"
+
 namespace ui {
 namespace theme {
 
@@ -11,6 +13,22 @@ lv_color_t text() { return lv_color_hex(0xECF1F7); }
 lv_color_t muted() { return lv_color_hex(0x8B97A6); }
 lv_color_t warn() { return lv_color_hex(0xFF8A3D); }
 lv_color_t good() { return lv_color_hex(0x5BD68A); }
+
+const lv_font_t *localizedFont(const lv_font_t *font) {
+    if (font == &lv_font_montserrat_14) {
+        return &ui_font_montserrat_14_de;
+    }
+    if (font == &lv_font_montserrat_16) {
+        return &ui_font_montserrat_16_de;
+    }
+    if (font == &lv_font_montserrat_20) {
+        return &ui_font_montserrat_20_de;
+    }
+    if (font == &lv_font_montserrat_24) {
+        return &ui_font_montserrat_24_de;
+    }
+    return font;
+}
 
 void styleCard(lv_obj_t *obj) {
     lv_obj_set_style_bg_color(obj, panel(), 0);
@@ -33,7 +51,7 @@ lv_obj_t *plainBox(lv_obj_t *parent) {
 
 lv_obj_t *label(lv_obj_t *parent, const lv_font_t *font, lv_color_t color, const char *text) {
     lv_obj_t *obj = lv_label_create(parent);
-    lv_obj_set_style_text_font(obj, font, 0);
+    lv_obj_set_style_text_font(obj, localizedFont(font), 0);
     lv_obj_set_style_text_color(obj, color, 0);
     lv_label_set_text(obj, text);
     return obj;
@@ -50,7 +68,7 @@ lv_obj_t *button(lv_obj_t *parent, const char *caption, const lv_font_t *font, l
     lv_obj_set_style_shadow_width(btn, 0, 0);
 
     lv_obj_t *text = lv_label_create(btn);
-    lv_obj_set_style_text_font(text, font, 0);
+    lv_obj_set_style_text_font(text, localizedFont(font), 0);
     lv_obj_set_style_text_color(text, theme::text(), 0);
     lv_label_set_text(text, caption);
     lv_obj_center(text);

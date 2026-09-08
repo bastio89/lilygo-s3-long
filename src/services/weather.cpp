@@ -153,8 +153,8 @@ bool WeatherService::fetch() {
 const char *weatherDescription(int code) {
     switch (code) {
     case 0: return "Klar";
-    case 1: return "Ueberwiegend klar";
-    case 2: return "Teils bewoelkt";
+    case 1: return "Überwiegend klar";
+    case 2: return "Teils bewölkt";
     case 3: return "Bedeckt";
     case 45:
     case 48: return "Nebel";

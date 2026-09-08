@@ -169,12 +169,12 @@ void presetCaptureCb(lv_event_t *e) {
         return;
     }
     if (!core::presets().capture(index, *g_desk)) {
-        dashboard::toast("Keine Hoehe bekannt");
+        dashboard::toast("Keine Höhe bekannt");
         return;
     }
     core::settingsSave();
     lv_dropdown_set_selected(g_presetModeDrop[index], 4);
-    dashboard::toast("Uebernommen");
+    dashboard::toast("Übernommen");
 }
 
 void factoryResetCb(lv_event_t *) {
@@ -192,7 +192,7 @@ lv_obj_t *makeDropdown(lv_obj_t *row, const char *options, lv_coord_t width,
     lv_obj_align(drop, LV_ALIGN_RIGHT_MID, -rightOffset, 0);
     lv_obj_set_style_bg_color(drop, theme::panelLight(), 0);
     lv_obj_set_style_border_width(drop, 0, 0);
-    lv_obj_set_style_text_font(drop, &lv_font_montserrat_14, 0);
+    lv_obj_set_style_text_font(drop, theme::localizedFont(&lv_font_montserrat_14), 0);
     return drop;
 }
 
@@ -268,7 +268,7 @@ void create(lv_obj_t *parent, desk::FlexiSpot &desk) {
             makeStepper(row, 76, &core::presets().at(i).heightCm, 0.5f, 40.0f, 200.0f, "");
 
         lv_obj_t *drop = makeDropdown(
-            row, "Box-Platz 1\nBox-Platz 2\nBox-Platz 3\nBox-Platz 4\nZielhoehe", 140, 220);
+            row, "Box-Platz 1\nBox-Platz 2\nBox-Platz 3\nBox-Platz 4\nZielhöhe", 140, 220);
         const desk::Preset &preset = core::presets().at(i);
         lv_dropdown_set_selected(drop, preset.mode == desk::PresetMode::TargetHeight
                                            ? 4

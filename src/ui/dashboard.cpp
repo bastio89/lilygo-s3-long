@@ -95,7 +95,7 @@ void begin(desk::FlexiSpot &desk) {
     lv_obj_set_style_bg_color(g_toast, theme::accent(), 0);
     lv_obj_set_style_bg_opa(g_toast, LV_OPA_COVER, 0);
     lv_obj_set_style_text_color(g_toast, lv_color_black(), 0);
-    lv_obj_set_style_text_font(g_toast, &lv_font_montserrat_16, 0);
+    lv_obj_set_style_text_font(g_toast, theme::localizedFont(&lv_font_montserrat_16), 0);
     lv_obj_set_style_pad_all(g_toast, 8, 0);
     lv_obj_set_style_radius(g_toast, 8, 0);
     lv_label_set_text(g_toast, "");

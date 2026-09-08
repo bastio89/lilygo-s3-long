@@ -318,7 +318,7 @@ void tick(uint32_t) {
     setLabelTextIfChanged(g_desc, services::weatherDescription(wx.code));
     updateWeatherIcon(g_currentIcon, wx.code, true);
     char feels[32];
-    snprintf(feels, sizeof(feels), "Gefuehlt %.0f C", static_cast<double>(wx.apparent));
+    snprintf(feels, sizeof(feels), "Gefühlt %.0f C", static_cast<double>(wx.apparent));
     setLabelTextIfChanged(g_feels, feels);
     char range[48];
     snprintf(range, sizeof(range), "Min %.0f C / Max %.0f C", static_cast<double>(wx.todayMin),

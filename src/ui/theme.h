@@ -22,6 +22,8 @@ lv_color_t muted();
 lv_color_t warn();
 lv_color_t good();
 
+const lv_font_t *localizedFont(const lv_font_t *font);
+
 // Karten-Optik fuer einen Container.
 void styleCard(lv_obj_t *obj);
 // Container ohne Rahmen, Polsterung und Scrollbalken.
