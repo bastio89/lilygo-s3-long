@@ -14,19 +14,19 @@
 #endif
 
 // --- Ort / Zeit -------------------------------------------------------------
-// Standardwerte: Berlin. Fuer den eigenen Ort z.B. auf
+// Standardwerte: Menziken, Schweiz. Fuer den eigenen Ort z.B. auf
 // https://open-meteo.com/en/docs nachschlagen.
 #ifndef LOCATION_NAME
-#define LOCATION_NAME "Berlin"
+#define LOCATION_NAME "Menziken, Schweiz"
 #endif
 #ifndef LOCATION_LATITUDE
-#define LOCATION_LATITUDE 52.52
+#define LOCATION_LATITUDE 47.23965
 #endif
 #ifndef LOCATION_LONGITUDE
-#define LOCATION_LONGITUDE 13.405
+#define LOCATION_LONGITUDE 8.18996
 #endif
 
-// POSIX-Zeitzone (Europa/Berlin inkl. Sommerzeitregel).
+// POSIX-Zeitzone (Mitteleuropa inkl. Sommerzeitregel).
 #ifndef TIMEZONE_POSIX
 #define TIMEZONE_POSIX "CET-1CEST,M3.5.0,M10.5.0/3"
 #endif

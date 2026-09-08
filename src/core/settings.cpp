@@ -47,6 +47,19 @@ void applyDefaults() {
     strlcpy(g_presets.at(1).name, "Stehen", desk::kPresetNameLen);
 }
 
+bool migrateLegacyBerlinLocation() {
+    if (strcmp(g_settings.locationName, "Berlin") != 0 ||
+        g_settings.latitude < 52.51f || g_settings.latitude > 52.53f ||
+        g_settings.longitude < 13.39f || g_settings.longitude > 13.42f) {
+        return false;
+    }
+
+    strlcpy(g_settings.locationName, LOCATION_NAME, sizeof(g_settings.locationName));
+    g_settings.latitude = LOCATION_LATITUDE;
+    g_settings.longitude = LOCATION_LONGITUDE;
+    return true;
+}
+
 } // namespace
 
 Settings &settings() { return g_settings; }
@@ -69,6 +82,7 @@ void settingsBegin() {
     }
 
     Settings stored;
+    bool migratedLocation = false;
     if (g_prefs.getBytes(kKeySettings, &stored, sizeof(stored)) == sizeof(stored)) {
         g_settings = stored;
         // Sicherheitsnetz gegen unbrauchbare Werte aus alten Staenden.
@@ -79,12 +93,18 @@ void settingsBegin() {
         if (g_settings.brightness < 10) {
             g_settings.brightness = 10;
         }
+        migratedLocation = migrateLegacyBerlinLocation();
     }
 
     desk::PresetTable storedPresets;
     if (g_prefs.getBytes(kKeyPresets, &storedPresets, sizeof(storedPresets)) ==
         sizeof(storedPresets)) {
         g_presets = storedPresets;
+    }
+
+    if (migratedLocation) {
+        log_i("Wetterort auf %s umgestellt", g_settings.locationName);
+        settingsSave();
     }
 }
 
