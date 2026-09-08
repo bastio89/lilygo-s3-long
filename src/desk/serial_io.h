@@ -1,4 +1,4 @@
-// Arduino-Transport fuer desk::Controller: UART2 auf den freien GPIOs der
+// Arduino-Transport fuer desk::FlexiSpot: UART2 auf den freien GPIOs der
 // Stiftleiste plus die PIN-20-Weckleitung der RJ45-Buchse.
 #pragma once
 
