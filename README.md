@@ -39,22 +39,78 @@ nichts", Uhr und Wetter laufen.
 
 ## Loslegen
 
-```bash
-cp include/secrets.example.h include/secrets.h   # WLAN eintragen
-# Ort und Fahrbereich in include/config.h anpassen
+### 1. PlatformIO installieren
 
-pio test -e native                 # Protokoll- und Ablauflogik prüfen
-pio run  -e t-display-s3-long -t upload
+Entweder **VS Code** mit der Erweiterung *PlatformIO IDE* (Extensions öffnen,
+nach „PlatformIO IDE" suchen, installieren, VS Code neu starten) — oder nur
+das Kommandozeilenwerkzeug:
+
+```bash
+pip install platformio
+```
+
+Beides zieht Toolchain, LVGL und ArduinoJson beim ersten Build selbst nach.
+Das dauert einmalig ein paar Minuten und braucht etwa 1 GB.
+
+### 2. Projekt holen und konfigurieren
+
+```bash
+git clone https://github.com/bastio89/lilygo-s3-long.git
+cd lilygo-s3-long
+
+cp include/secrets.example.h include/secrets.h   # WLAN eintragen
+```
+
+In `include/config.h` noch den Ort fürs Wetter setzen (`LOCATION_*`,
+Koordinaten z. B. von [open-meteo.com](https://open-meteo.com/en/docs)).
+Alles andere lässt sich später auf der Einstellungsseite ändern.
+
+Ob die Logik stimmt, lässt sich schon ohne Hardware prüfen:
+
+```bash
+pio test -e native
+```
+
+### 3. Aufspielen
+
+Board per **USB-C** anschließen — mit einem Datenkabel; reine Ladekabel haben
+keine Datenadern und das Board taucht dann gar nicht auf.
+
+```bash
+pio run -e t-display-s3-long -t upload
 pio device monitor
 ```
 
-PlatformIO bringt Toolchain, LVGL 8.3 und ArduinoJson selbst mit. Die
-Boarddefinition liegt in `boards/T-Display-Long.json`.
+In VS Code stattdessen die Pfeil-Schaltfläche (→) unten links, danach das
+Stecker-Symbol für die Konsole.
 
-Beim ersten Anschließen an den Tisch hilft der Mithör-Modus. Er gibt aus,
-was von der Steuerbox hereinkommt — dekodierte Frames *und* eine Rohbilanz,
-damit auch der Fall „es kommen Bytes an, aber keine gültigen Frames" sichtbar
-wird:
+Danach sollte das Display angehen und die Schreibtischseite zeigen. Ohne
+angeschlossenen Tisch steht dort „Steuerbox meldet nichts" — das ist richtig
+so. Uhr und Wetter laufen, sobald das WLAN steht.
+
+### Wenn der Upload nicht klappt
+
+Der ESP32-S3 meldet sich über sein eingebautes USB an, ein extra Treiber ist
+normalerweise nicht nötig (Windows zeigt „USB Serial Device (COMx)").
+
+Wird trotzdem kein Port gefunden oder bricht der Upload ab, hilft der
+Bootloader-Modus von Hand:
+
+1. **BOOT** gedrückt halten
+2. kurz **RST** drücken
+3. **RST** loslassen
+4. **BOOT** loslassen
+5. Upload erneut starten, danach einmal **RST** für den Neustart
+
+Geht das Display gar nicht an, den kleinen Schiebeschalter an der Boardkante
+prüfen — der trennt den Akku ab.
+
+### Mithör-Modus
+
+Beim ersten Anschließen an den Tisch hilft ein eigenes Environment. Es gibt
+aus, was von der Steuerbox hereinkommt — dekodierte Frames *und* eine
+Rohbilanz, damit auch der Fall „es kommen Bytes an, aber keine gültigen
+Frames" sichtbar wird:
 
 ```bash
 pio run -e sniffer -t upload
@@ -65,6 +121,10 @@ pio device monitor
 [roh] 216 Bytes | 24 Frames ok | 0 CRC-Fehler | zuletzt: 9B 07 12 07 CF 6D ...
 [frame] typ=0x12 07 CF 6D -> Anzeige "735" = 73.5
 ```
+
+Was die Ausgabe bedeutet, steht in
+[docs/hardware.md](docs/hardware.md) — inklusive der Tabelle, die vom
+Beobachteten auf die Ursache schließt.
 
 ## Bedienung
 
