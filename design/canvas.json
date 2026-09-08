@@ -1,0 +1,62 @@
+{
+  "artboards": [
+    { "file": "System.dc.html", "title": "Designsystem", "x": 0, "y": 0, "w": 1480, "h": 1360 },
+
+    { "file": "Statuszeile.dc.html", "title": "Statuszeile", "x": 0, "y": 1560, "w": 640, "h": 180 },
+    { "file": "Seitenraster.dc.html", "title": "Seitenraster", "x": 780, "y": 1560, "w": 640, "h": 180 },
+    { "file": "Main.dc.html", "title": "Schreibtisch — bereit", "x": 1560, "y": 1560, "w": 640, "h": 180 },
+
+    { "file": "SchreibtischFahrt.dc.html", "title": "Schreibtisch — Fahrt", "x": 0, "y": 1980, "w": 640, "h": 180 },
+    { "file": "SchreibtischOhneRueckmeldung.dc.html", "title": "Schreibtisch — keine Rückmeldung", "x": 780, "y": 1980, "w": 640, "h": 180 },
+    { "file": "SchreibtischFehlercode.dc.html", "title": "Schreibtisch — Fehlercode", "x": 1560, "y": 1980, "w": 640, "h": 180 },
+
+    { "file": "Wetter.dc.html", "title": "Wetter", "x": 0, "y": 2400, "w": 640, "h": 180 },
+    { "file": "WetterOhneNetz.dc.html", "title": "Wetter — kein Netz", "x": 780, "y": 2400, "w": 640, "h": 180 },
+    { "file": "Einstellungen.dc.html", "title": "Einstellungen", "x": 1560, "y": 2400, "w": 640, "h": 180 },
+
+    { "file": "Spotify.dc.html", "title": "Spotify", "x": 0, "y": 2820, "w": 640, "h": 180 },
+    { "file": "Kalender.dc.html", "title": "Kalender", "x": 780, "y": 2820, "w": 640, "h": 180 },
+    { "file": "Nacht.dc.html", "title": "Nachtvariante", "x": 1560, "y": 2820, "w": 640, "h": 180 }
+  ],
+  "annotations": [
+    { "id": "n-system", "x": 0, "y": -210, "w": 900,
+      "text": "Designsystem\n\nFarbtoken und Schriftstufen sind die, die heute schon in src/ui/theme.cpp und im Flash liegen — nachgeschärft, nicht ersetzt. Die Skala kostet also keinen zusätzlichen Speicher.\n\nEntschieden gegen ein fluides Spaltenraster: auf 624 nutzbaren Pixeln ergeben 12 Spalten krumme 44,67 px. Stattdessen feste Modulbreiten auf einem 8-px-Raster — das lässt sich in LVGL ohne Rechnerei hinschreiben." },
+
+    { "id": "n-bar", "x": 0, "y": 1390, "w": 640,
+      "text": "Statuszeile — die Antwort auf die Navigationsfrage\n\nDie Höhe steht immer oben links. Der häufigste Blick („wie hoch steht er?\") braucht damit gar keine Seite, egal wo man ist.\n\nLinks tippen springt zum Schreibtisch, die Mitte öffnet das Seitenraster. Von überall nach überall in höchstens zwei Tippern, auch bei zwölf Seiten.\n\nVerworfen: eine feste Reiterleiste unten. Auf 180 px Höhe frisst sie 22 % der Fläche, und ab sechs Seiten werden die Reiter unlesbar." },
+
+    { "id": "n-raster", "x": 780, "y": 1390, "w": 640,
+      "text": "Seitenraster\n\nDer Launcher ist zugleich Übersicht: jede Kachel trägt ihren aktuellen Wert. Ein Blick genügt für „Tisch bereit, 18 Grad, Standup um halb zehn\".\n\nAcht Plätze, sieben belegt — die leere Kachel zeigt, dass Wachsen vorgesehen ist und nicht improvisiert." },
+
+    { "id": "n-main", "x": 1560, "y": 1390, "w": 640,
+      "text": "Schreibtisch — bereit\n\nDas Grundlayout jeder Seite: links die Fokuskachel mit dem einen Wert, rechts die Aktionen in Modulen von 96 × 64 aufwärts.\n\nHoch und Runter sitzen direkt neben der Zahl, damit Ablesen und Drücken eine Bewegung sind. Der Not-Stopp klebt als schmale, volle Höhe am rechten Rand — blind zu treffen, nie versehentlich." },
+
+    { "id": "n-fahrt", "x": 0, "y": 1810, "w": 640,
+      "text": "Schreibtisch — Fahrt mit Ziel\n\nDas Statusband links wird blau, ein 4-px-Balken zeigt den Weg zum Ziel. Beides sind kleine Flächen — genau das, was sich bei streifenweisem Neuzeichnen flüssig animieren lässt.\n\nDie Richtungstaste bekommt nur einen Rahmen, keine Füllung: gefüllt heißt „mein Finger liegt drauf\". Der Stopp färbt sich rot, weil er jetzt die wichtigste Fläche ist." },
+
+    { "id": "n-ohne", "x": 780, "y": 1810, "w": 640,
+      "text": "Schreibtisch — keine Rückmeldung\n\nDrei Striche statt einer erfundenen Zahl, Statusband orange. Die beiden Zielhöhen-Plätze sind sichtbar ausgegraut, weil geregeltes Fahren ohne Rückmeldung nicht geht — die Box-Plätze bleiben aktiv.\n\nAuch in der Statuszeile stehen Striche. Ein Zustand, eine Aussage, überall dieselbe." },
+
+    { "id": "n-fehler", "x": 1560, "y": 1810, "w": 640,
+      "text": "Schreibtisch — Fehlercode\n\nDie Steuerbox schickt dreistellige Codes wie ASr statt einer Höhe. Der Code steht in derselben 48er Stelle wie die Zahl — kein Sonderlayout — und darunter im Klartext, was zu tun ist.\n\nDie Fokuskachel nimmt also Zahl, Code oder Platzhalter auf, ohne ihre Form zu ändern." },
+
+    { "id": "n-wetter", "x": 0, "y": 2230, "w": 640,
+      "text": "Wetter\n\nDerselbe Bauplan, anderer Inhalt: Temperatur in der Fokuskachel, rechts sechs Kennwert-Kacheln in zwei Reihen à 64 px — dieselbe Modulhöhe wie die Tasten der Schreibtischseite.\n\nDer Ortsname steht als Zusatz im Seitennamen der Statuszeile statt in der Kachel." },
+
+    { "id": "n-wetter-off", "x": 780, "y": 2230, "w": 640,
+      "text": "Wetter — kein Netz\n\nKeine leere Seite und kein Fehlerdialog: der letzte bekannte Stand mit Zeitstempel, dazu wann der nächste Versuch läuft. Statusband orange, WLAN-Zeichen durchgestrichen.\n\nDas Muster gilt für jeden künftigen Dienst — Kalender und Abfahrten sehen offline genauso aus." },
+
+    { "id": "n-settings", "x": 1560, "y": 2230, "w": 640,
+      "text": "Einstellungen\n\nDie einzige Seite ohne Fokuskachel: hier gibt es keinen dominierenden Wert, sondern eine Liste. Zeilen sind 44 px hoch, Bedienelemente rechtsbündig auf einer Kante.\n\nDie dritte Zeile ist bewusst angeschnitten und rechts steht ein Scrollbalken — sonst sieht die Seite aus, als wäre sie zu Ende." },
+
+    { "id": "n-spotify", "x": 0, "y": 2650, "w": 640,
+      "text": "Spotify — der Beweis\n\nExakt dieselbe Geometrie wie die Schreibtischseite: 244er Fokuskachel, 96er Spalte, 2 × 2 Raster, 36er Randstreifen. Nur der Inhalt ist anders — Titel und Interpret statt Wert und Einheit.\n\nDas ist die Probe aufs Exempel: eine neue Seite ist ein Ausfüllen, kein Neuentwurf. Lange Titel werden mit Auslassung abgeschnitten.\n\nErwogen: Lautstärke als Regler statt zwei Tasten. Verworfen, weil ein Regler die Rastergleichheit bricht — und blind trifft man Tasten besser." },
+
+    { "id": "n-kalender", "x": 780, "y": 2650, "w": 640,
+      "text": "Kalender — der zweite Beweis\n\nHier zeigt die rechte Zone, dass sie auch Listenzeilen trägt und nicht nur Tasten. Der nächste Termin steht groß links, die folgenden drei rechts.\n\nDamit sind alle drei Füllungen der Aktionszone durchgespielt: Tasten, Kennwert-Kacheln, Listenzeilen." },
+
+    { "id": "n-nacht", "x": 1560, "y": 2650, "w": 640,
+      "text": "Nachtvariante\n\nBei niedriger Helligkeit verschwinden dünne Graustufen zuerst. Also weniger Ebenen statt gleichmäßig dunkler: Kacheln sinken fast in den Grund, der Wert behält seinen Kontrast, der Akzent wird gedämpft.\n\nEs ist derselbe Aufbau mit anderen Token — ein Satz Farben, kein zweites Layout." }
+  ],
+  "launch": { "view": "canvas" }
+}

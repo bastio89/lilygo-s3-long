@@ -3,3 +3,6 @@
 include/secrets.h
 *.bin
 *.elf
+
+# Bauergebnis der Design-Leinwand (regenerierbar aus design/)
+smartdesk-designsystem.html
