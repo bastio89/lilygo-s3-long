@@ -30,8 +30,8 @@ enum class WeatherIconKind : uint8_t {
 
 struct WeatherIcon {
     lv_obj_t *root = nullptr;
+    lv_obj_t *sunGlow = nullptr;
     lv_obj_t *sun = nullptr;
-    lv_obj_t *rays[8] = {};
     lv_obj_t *cloud[4] = {};
     lv_obj_t *rain[3] = {};
     lv_obj_t *snow[3] = {};
@@ -50,7 +50,11 @@ struct ForecastUi {
 
 lv_obj_t *g_temp = nullptr;
 lv_obj_t *g_desc = nullptr;
-lv_obj_t *g_details = nullptr;
+lv_obj_t *g_feels = nullptr;
+lv_obj_t *g_range = nullptr;
+lv_obj_t *g_humidity = nullptr;
+lv_obj_t *g_wind = nullptr;
+lv_obj_t *g_precipitation = nullptr;
 lv_obj_t *g_place = nullptr;
 lv_obj_t *g_status = nullptr;
 WeatherIcon g_currentIcon;
@@ -89,10 +93,10 @@ WeatherIcon createWeatherIcon(lv_obj_t *parent, lv_coord_t width, lv_coord_t hei
     lv_obj_set_size(icon.root, width, height);
 
     const lv_coord_t unit = icon.unit;
+    icon.sunGlow =
+        makeShape(icon.root, 0, 0, 8 * unit, 8 * unit, 0xFFB84Du, LV_RADIUS_CIRCLE);
+    lv_obj_set_style_bg_opa(icon.sunGlow, LV_OPA_40, 0);
     icon.sun = makeShape(icon.root, 0, 0, 6 * unit, 6 * unit, 0xFFC64Bu, LV_RADIUS_CIRCLE);
-    for (lv_obj_t *&ray : icon.rays) {
-        ray = makeShape(icon.root, 0, 0, unit, unit, 0xFFC64Bu, unit / 2);
-    }
 
     icon.cloud[0] = makeShape(icon.root, 3 * unit, 7 * unit, 13 * unit, 4 * unit, 0x78899Au,
                               2 * unit);
@@ -135,23 +139,8 @@ WeatherIconKind weatherIconKind(int code) {
 
 void positionSun(WeatherIcon &icon, lv_coord_t x, lv_coord_t y) {
     const lv_coord_t unit = icon.unit;
+    lv_obj_set_pos(icon.sunGlow, x - unit, y - unit);
     lv_obj_set_pos(icon.sun, x, y);
-    lv_obj_set_pos(icon.rays[0], x + 2 * unit, y - unit);
-    lv_obj_set_size(icon.rays[0], 2 * unit, unit);
-    lv_obj_set_pos(icon.rays[1], x + 2 * unit, y + 7 * unit);
-    lv_obj_set_size(icon.rays[1], 2 * unit, unit);
-    lv_obj_set_pos(icon.rays[2], x - unit, y + 2 * unit);
-    lv_obj_set_size(icon.rays[2], unit, 2 * unit);
-    lv_obj_set_pos(icon.rays[3], x + 7 * unit, y + 2 * unit);
-    lv_obj_set_size(icon.rays[3], unit, 2 * unit);
-    lv_obj_set_pos(icon.rays[4], x, y - unit);
-    lv_obj_set_size(icon.rays[4], 2 * unit, unit);
-    lv_obj_set_pos(icon.rays[5], x + 5 * unit, y - unit);
-    lv_obj_set_size(icon.rays[5], 2 * unit, unit);
-    lv_obj_set_pos(icon.rays[6], x, y + 6 * unit);
-    lv_obj_set_size(icon.rays[6], 2 * unit, unit);
-    lv_obj_set_pos(icon.rays[7], x + 5 * unit, y + 6 * unit);
-    lv_obj_set_size(icon.rays[7], 2 * unit, unit);
 }
 
 void updateWeatherIcon(WeatherIcon &icon, int code, bool valid) {
@@ -181,10 +170,8 @@ void updateWeatherIcon(WeatherIcon &icon, int code, bool valid) {
                                  ? (icon.width - 6 * icon.unit) / 2
                                  : icon.unit;
     positionSun(icon, sunX, kind == WeatherIconKind::Clear ? 2 * icon.unit : icon.unit);
+    setObjectHidden(icon.sunGlow, !showSun);
     setObjectHidden(icon.sun, !showSun);
-    for (lv_obj_t *ray : icon.rays) {
-        setObjectHidden(ray, !showSun);
-    }
     for (lv_obj_t *cloud : icon.cloud) {
         setObjectHidden(cloud, !showCloud);
     }
@@ -203,6 +190,14 @@ void setLabelTextIfChanged(lv_obj_t *label, const char *text) {
     if (strcmp(lv_label_get_text(label), text) != 0) {
         lv_label_set_text(label, text);
     }
+}
+
+lv_obj_t *makeMetric(lv_obj_t *parent, lv_coord_t x, lv_coord_t y, lv_coord_t width) {
+    lv_obj_t *metric = theme::label(parent, &lv_font_montserrat_16, theme::muted(), "");
+    lv_obj_set_pos(metric, x, y);
+    lv_obj_set_size(metric, width, 20);
+    lv_label_set_long_mode(metric, LV_LABEL_LONG_CLIP);
+    return metric;
 }
 
 int weekdayIndex(int year, int month, int day) {
@@ -260,14 +255,16 @@ void create(lv_obj_t *parent) {
     updateWeatherIcon(g_currentIcon, 0, false);
 
     g_temp = theme::label(current, &lv_font_montserrat_48, theme::text(), "--");
-    lv_obj_set_pos(g_temp, 192, 27);
-    g_desc = theme::label(current, &lv_font_montserrat_20, theme::text(), "Keine Daten");
-    lv_obj_set_pos(g_desc, 328, 39);
-    lv_obj_set_size(g_desc, 278, 24);
+    lv_obj_set_pos(g_temp, 194, 27);
+    g_desc = theme::label(current, &lv_font_montserrat_24, theme::text(), "Keine Daten");
+    lv_obj_set_pos(g_desc, 350, 38);
+    lv_obj_set_size(g_desc, 258, 30);
     lv_label_set_long_mode(g_desc, LV_LABEL_LONG_CLIP);
-    g_details = theme::label(current, &lv_font_montserrat_14, theme::muted(), "");
-    lv_obj_set_pos(g_details, 194, 81);
-    lv_obj_set_size(g_details, 408, 46);
+    g_feels = makeMetric(current, 194, 80, 148);
+    g_range = makeMetric(current, 350, 80, 258);
+    g_humidity = makeMetric(current, 194, 106, 148);
+    g_wind = makeMetric(current, 350, 106, 130);
+    g_precipitation = makeMetric(current, 490, 106, 118);
 
     lv_obj_t *headline = theme::label(list, &lv_font_montserrat_20, theme::text(),
                                       "3-Tage-Prognose");
@@ -302,7 +299,11 @@ void tick(uint32_t) {
     if (!wx.valid) {
         setLabelTextIfChanged(g_temp, "--");
         setLabelTextIfChanged(g_desc, "Keine Daten");
-        setLabelTextIfChanged(g_details, "Wetterdaten werden abgerufen");
+        setLabelTextIfChanged(g_feels, "Wetterdaten werden abgerufen");
+        setLabelTextIfChanged(g_range, "");
+        setLabelTextIfChanged(g_humidity, "");
+        setLabelTextIfChanged(g_wind, "");
+        setLabelTextIfChanged(g_precipitation, "");
         updateWeatherIcon(g_currentIcon, 0, false);
         for (ForecastUi &forecast : g_forecast) {
             setLabelTextIfChanged(forecast.day, "--");
@@ -316,14 +317,22 @@ void tick(uint32_t) {
     setLabelTextIfChanged(g_temp, temperature);
     setLabelTextIfChanged(g_desc, services::weatherDescription(wx.code));
     updateWeatherIcon(g_currentIcon, wx.code, true);
-    char details[128];
-    snprintf(details, sizeof(details),
-             "gefuehlt %.0f C   min %.0f / max %.0f C\n"
-             "%d %% Luftfeuchte   %.0f km/h Wind   %d %% Regen",
-             static_cast<double>(wx.apparent), static_cast<double>(wx.todayMin),
-             static_cast<double>(wx.todayMax), wx.humidity, static_cast<double>(wx.windKmh),
-             wx.precipitationProb);
-    setLabelTextIfChanged(g_details, details);
+    char feels[32];
+    snprintf(feels, sizeof(feels), "Gefuehlt %.0f C", static_cast<double>(wx.apparent));
+    setLabelTextIfChanged(g_feels, feels);
+    char range[48];
+    snprintf(range, sizeof(range), "Min %.0f C / Max %.0f C", static_cast<double>(wx.todayMin),
+             static_cast<double>(wx.todayMax));
+    setLabelTextIfChanged(g_range, range);
+    char humidity[32];
+    snprintf(humidity, sizeof(humidity), "Luftfeuchte %d %%", wx.humidity);
+    setLabelTextIfChanged(g_humidity, humidity);
+    char wind[32];
+    snprintf(wind, sizeof(wind), "Wind %.0f km/h", static_cast<double>(wx.windKmh));
+    setLabelTextIfChanged(g_wind, wind);
+    char precipitation[32];
+    snprintf(precipitation, sizeof(precipitation), "Regen %d %%", wx.precipitationProb);
+    setLabelTextIfChanged(g_precipitation, precipitation);
 
     for (uint8_t index = 0; index < services::kWeatherForecastDays; ++index) {
         const services::WeatherForecastDay &day = wx.forecast[index];
