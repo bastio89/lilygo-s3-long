@@ -1,4 +1,4 @@
-#include "desk/loctek_protocol.h"
+#include "desk/protocol.h"
 
 #include <string.h>
 

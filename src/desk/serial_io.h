@@ -6,7 +6,7 @@
 #include <HardwareSerial.h>
 
 #include "board/pins.h"
-#include "desk/desk_controller.h"
+#include "desk/flexispot.h"
 
 namespace desk {
 

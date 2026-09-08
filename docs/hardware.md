@@ -35,8 +35,8 @@ sowie `GND`, `3V3` und `VBUS`.
 
 Je nach Fertigungslos sitzt der Touchcontroller entweder im AXS15231B selbst
 (I2C `0x3B`) oder es ist ein separater CST3xx (I2C `0x1A`). `board/touch.cpp`
-erkennt beim Start automatisch, welcher vorhanden ist — die Systemseite der UI
-zeigt das Ergebnis an.
+erkennt beim Start automatisch, welcher vorhanden ist — die Einstellungsseite
+der UI zeigt das Ergebnis an.
 
 ## 2. Die Steuerbox
 
@@ -115,7 +115,7 @@ Zwei Möglichkeiten:
    ```
 
    Am Handbedienteil eine Taste drücken — auf der Konsole müssen Frames mit
-   `type=0x12` erscheinen. Die Systemseite der UI zählt gültige Frames und
+   `type=0x12` erscheinen. Die Einstellungsseite der UI zählt gültige Frames und
    CRC-Fehler mit; viele CRC-Fehler heißen: falscher Pin oder fehlende
    Pegelwandlung.
 3. **Höhe prüfen.** Die große Zahl auf der Schreibtischseite muss der Anzeige
@@ -124,9 +124,11 @@ Zwei Möglichkeiten:
    `DESK_MAX_HEIGHT_CM` entsprechend interpretieren.
 4. **Erst dann senden.** TX und PIN 20 anschließen und mit den Pfeiltasten
    testen. Finger auf der Taste = Tisch fährt, loslassen = Tisch stoppt.
-5. **Fahrbereich eintragen.** Die tatsächlichen Endlagen ablesen und in
-   `include/config.h` als `DESK_MIN_HEIGHT_CM` / `DESK_MAX_HEIGHT_CM`
-   hinterlegen. Erst danach den Modus „Geregelt fahren" benutzen.
+5. **Fahrbereich eintragen.** Die tatsächlichen Endlagen ablesen und auf der
+   Einstellungsseite unter „Fahrbereich min / max" eintragen (bzw. dauerhaft
+   als `DESK_MIN_HEIGHT_CM` / `DESK_MAX_HEIGHT_CM` in `include/config.h`).
+   Erst danach einen Speicherplatz auf „Zielhöhe" umstellen — vorher fehlt
+   der Regelung die Begrenzung.
 
 ## 4. Sicherheit
 

@@ -36,7 +36,8 @@
 
 // --- Schreibtisch -----------------------------------------------------------
 // Fahrbereich der Tischplatte in cm. Vor dem ersten geregelten Fahren mit den
-// Werten der eigenen Anlage abgleichen (Systemseite zeigt die Ist-Hoehe).
+// Werten der eigenen Anlage abgleichen; zur Laufzeit auf der
+// Einstellungsseite aenderbar.
 #ifndef DESK_MIN_HEIGHT_CM
 #define DESK_MIN_HEIGHT_CM 60.0f
 #endif
@@ -44,8 +45,11 @@
 #define DESK_MAX_HEIGHT_CM 125.0f
 #endif
 
-// Zielhoehen der beiden grossen Tasten, falls du statt der Speicherplaetze
-// der Steuerbox geregelt fahren willst (Systemseite -> "Geregelt fahren").
+// Werksvorgabe fuer die Speicherplaetze 1 und 2: geregelt angefahrene
+// Zielhoehen. Die Plaetze 3 und 4 loesen ab Werk die Speicherplaetze 3 und 4
+// der Steuerbox aus. Alles davon ist auf der Einstellungsseite aenderbar und
+// wird dann im NVS abgelegt -- diese Werte gelten nur beim ersten Start bzw.
+// nach "Werkseinstellungen".
 #ifndef DESK_SIT_HEIGHT_CM
 #define DESK_SIT_HEIGHT_CM 73.0f
 #endif

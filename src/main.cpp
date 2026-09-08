@@ -1,36 +1,38 @@
-// Flexispot-/LoctekMotion-Schreibtischsteuerung auf dem LilyGo T-Display-S3 Long.
+// SmartDesk -- Flexispot-/LoctekMotion-Schreibtischsteuerung auf dem
+// LilyGo T-Display-S3 Long.
 //
-// Aufbau:
-//   board/  Panel, Touch, Backlight
-//   desk/   serielles Protokoll der Steuerbox + Ablauflogik
-//   net/    WLAN, Zeit, Wetter
-//   ui/     LVGL-Oberflaeche
+//   board/     Panel, Touch, Backlight (Hardwareschicht)
+//   core/      Netz, Einstellungen, Zeit
+//   desk/      Protokoll der Steuerbox, Fahrlogik, Speicherplaetze
+//   services/  Hintergrunddienste (Wetter, spaeter Kalender ...)
+//   ui/        Dashboard und Seiten
 #include <Arduino.h>
 #include <lvgl.h>
 
 #include "board/display.h"
 #include "board/pins.h"
 #include "board/touch.h"
-#include "config.h"
-#include "desk/desk_serial.h"
-#include "net/net.h"
-#include "net/weather.h"
-#include "ui/ui.h"
+#include "core/clock.h"
+#include "core/network.h"
+#include "core/settings.h"
+#include "desk/flexispot.h"
+#include "desk/serial_io.h"
+#include "services/service.h"
+#include "services/weather.h"
+#include "ui/dashboard.h"
 
-namespace {
-
-HardwareSerial g_deskPort(1);
-desk::SerialIo g_deskIo(g_deskPort);
-desk::Controller *g_desk = nullptr;
-
-uint32_t g_lastUiTickMs = 0;
-constexpr uint32_t kUiTickMs = 200;
-
-// Mit -DDESK_SNIFFER=1 werden alle gueltigen Frames der Steuerbox auf der
-// USB-Konsole ausgegeben -- hilfreich beim ersten Anschliessen.
 #ifndef DESK_SNIFFER
 #define DESK_SNIFFER 0
 #endif
+
+namespace {
+
+constexpr uint32_t kUiTickMs = 200;
+
+HardwareSerial g_deskPort(1);
+desk::SerialIo g_deskIo(g_deskPort);
+desk::FlexiSpot *g_desk = nullptr;
+uint32_t g_lastUiTickMs = 0;
 
 #if DESK_SNIFFER
 void logFrame(const loctek::Frame &frame, void *) {
@@ -42,23 +44,34 @@ void logFrame(const loctek::Frame &frame, void *) {
 }
 #endif
 
-desk::Config deskConfig() {
+desk::Config deskConfigFromSettings() {
     desk::Config cfg;
-    cfg.minHeightCm = DESK_MIN_HEIGHT_CM;
-    cfg.maxHeightCm = DESK_MAX_HEIGHT_CM;
+    cfg.minHeightCm = core::settings().minHeightCm;
+    cfg.maxHeightCm = core::settings().maxHeightCm;
     return cfg;
 }
 
+// Fahrbereich nachziehen, falls er auf der Einstellungsseite geaendert wurde.
+void syncDeskLimits() {
+    const desk::Config current = g_desk->config();
+    if (current.minHeightCm != core::settings().minHeightCm ||
+        current.maxHeightCm != core::settings().maxHeightCm) {
+        g_desk->setConfig(deskConfigFromSettings());
+    }
+}
+
 void handleDisplaySleep() {
-#if DISPLAY_SLEEP_AFTER_MS > 0
+    const uint32_t after = core::settings().sleepAfterMs;
+    if (after == 0) {
+        return;
+    }
     const uint32_t idle = lv_disp_get_inactive_time(nullptr);
-    const bool busy = g_desk != nullptr && (g_desk->moving() || g_desk->targetActive());
-    if (!board::displayAsleep() && idle > DISPLAY_SLEEP_AFTER_MS && !busy) {
+    const bool busy = g_desk->moving() || g_desk->targetActive();
+    if (!board::displayAsleep() && idle > after && !busy) {
         board::displaySleep();
-    } else if (board::displayAsleep() && (idle < DISPLAY_SLEEP_AFTER_MS || busy)) {
+    } else if (board::displayAsleep() && (idle < after || busy)) {
         board::displayWake();
     }
-#endif
 }
 
 } // namespace
@@ -66,31 +79,37 @@ void handleDisplaySleep() {
 void setup() {
     Serial.begin(115200);
     delay(200);
-    Serial.println("\nT-Display-S3 Long :: Flexispot-Steuerung");
+    Serial.println("\nSmartDesk auf T-Display-S3 Long");
+
+    core::settingsBegin();
 
     if (!board::touchBegin()) {
         Serial.println("WARNUNG: kein Touchcontroller gefunden");
     } else {
         Serial.printf("Touch: %s\n", board::touchChipName());
     }
+    board::touchSetInvert(core::settings().touchInvertX, core::settings().touchInvertY);
 
     if (!board::displayBegin()) {
         Serial.println("FEHLER: Display-Init fehlgeschlagen");
     }
-    board::setBrightness(DISPLAY_BRIGHTNESS);
+    board::setBrightness(core::settings().brightness);
 
     g_deskIo.begin();
-    static desk::Controller controller(g_deskIo, deskConfig());
-    g_desk = &controller;
+    static desk::FlexiSpot flexispot(g_deskIo, deskConfigFromSettings());
+    g_desk = &flexispot;
 #if DESK_SNIFFER
-    controller.onFrame(logFrame, nullptr);
+    flexispot.onFrame(logFrame, nullptr);
 #endif
-    controller.begin(millis());
+    flexispot.begin(millis());
 
-    ui::begin(controller);
+    ui::dashboard::begin(flexispot);
 
-    net::begin();
-    weather::begin();
+    core::networkBegin();
+    core::clockBegin();
+
+    services::registerService(services::weather());
+    services::beginAll();
 
     Serial.printf("Schreibtisch-UART: RX=%d TX=%d WAKE=%d @ %d Baud\n", DESK_UART_RX_PIN,
                   DESK_UART_TX_PIN, DESK_WAKE_PIN, DESK_UART_BAUD);
@@ -99,15 +118,15 @@ void setup() {
 void loop() {
     const uint32_t now = millis();
 
-    if (g_desk != nullptr) {
-        g_desk->poll(now);
-    }
-    net::loop(now);
-    weather::loop(now);
+    g_desk->poll(now);
+    core::networkLoop(now);
+    core::clockLoop(now);
+    services::loopAll(now);
 
     if (static_cast<uint32_t>(now - g_lastUiTickMs) >= kUiTickMs) {
         g_lastUiTickMs = now;
-        ui::tick(now);
+        syncDeskLimits();
+        ui::dashboard::tick(now);
     }
 
     handleDisplaySleep();

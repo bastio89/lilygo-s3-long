@@ -5,8 +5,9 @@
 #include <string.h>
 #include <vector>
 
-#include "desk/desk_controller.h"
-#include "desk/loctek_protocol.h"
+#include "desk/flexispot.h"
+#include "desk/presets.h"
+#include "desk/protocol.h"
 
 using namespace loctek;
 
@@ -216,7 +217,7 @@ class FakeDesk : public desk::Io {
 
 void test_controller_wakes_and_sends_heartbeat(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
 
@@ -237,7 +238,7 @@ void test_controller_wakes_and_sends_heartbeat(void) {
 
 void test_controller_tracks_height(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.wake(t);
@@ -252,7 +253,7 @@ void test_controller_tracks_height(void) {
 
 void test_controller_move_to_reaches_target(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.wake(t);
@@ -279,7 +280,7 @@ void test_controller_move_to_reaches_target(void) {
 
 void test_controller_move_down_and_stall_detection(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.wake(t);
@@ -303,7 +304,7 @@ void test_controller_move_down_and_stall_detection(void) {
 
 void test_controller_move_without_feedback_aborts(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.wake(t);
@@ -319,7 +320,7 @@ void test_controller_move_without_feedback_aborts(void) {
 
 void test_controller_preset_is_a_tap(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.preset(3, t);
@@ -336,13 +337,106 @@ void test_controller_preset_is_a_tap(void) {
 
 void test_controller_clamps_target_to_limits(void) {
     FakeDesk fake;
-    desk::Controller c(fake);
+    desk::FlexiSpot c(fake);
     uint32_t t = 1000;
     c.begin(t);
     c.moveTo(300.0f, t);
     TEST_ASSERT_FLOAT_WITHIN(0.001f, c.config().maxHeightCm, c.targetCm());
     c.moveTo(10.0f, t);
     TEST_ASSERT_FLOAT_WITHIN(0.001f, c.config().minHeightCm, c.targetCm());
+}
+
+
+// --------------------------------------------------------- Preset-Tests ---
+
+void test_presets_defaults_map_to_box_slots(void) {
+    desk::PresetTable table;
+    for (uint8_t i = 0; i < desk::kPresetCount; ++i) {
+        TEST_ASSERT_EQUAL_INT(static_cast<int>(desk::PresetMode::BoxMemory),
+                              static_cast<int>(table.at(i).mode));
+        TEST_ASSERT_EQUAL_UINT8(i + 1, table.at(i).boxSlot);
+        char label[desk::kPresetNameLen];
+        table.label(i, label, sizeof(label));
+        char want[4];
+        snprintf(want, sizeof(want), "%u", i + 1);
+        TEST_ASSERT_EQUAL_STRING(want, label);
+    }
+}
+
+void test_presets_apply_box_slot_sends_preset_key(void) {
+    FakeDesk fake;
+    desk::FlexiSpot c(fake);
+    desk::PresetTable table;
+    uint32_t t = 1000;
+    c.begin(t);
+
+    TEST_ASSERT_TRUE(table.apply(2, c, t)); // Platz 3 -> Box-Platz 3
+    for (int i = 0; i < 20; ++i) {
+        c.poll(t += 10);
+    }
+    TEST_ASSERT_EQUAL_HEX16(KEY_PRESET_3, fake.keysSeen.front());
+}
+
+void test_presets_capture_switches_to_target_height(void) {
+    FakeDesk fake;
+    desk::FlexiSpot c(fake);
+    desk::PresetTable table;
+    uint32_t t = 1000;
+    c.begin(t);
+    c.wake(t);
+
+    TEST_ASSERT_FALSE(table.capture(0, c)); // noch keine Hoehe bekannt
+
+    fake.height = 73.5f;
+    fake.emitHeight();
+    c.poll(t += 10);
+
+    TEST_ASSERT_TRUE(table.capture(0, c));
+    TEST_ASSERT_EQUAL_INT(static_cast<int>(desk::PresetMode::TargetHeight),
+                          static_cast<int>(table.at(0).mode));
+    TEST_ASSERT_FLOAT_WITHIN(0.05f, 73.5f, table.at(0).heightCm);
+
+    char label[desk::kPresetNameLen];
+    table.label(0, label, sizeof(label));
+    TEST_ASSERT_EQUAL_STRING("74", label); // gerundet auf ganze cm
+}
+
+void test_presets_apply_target_height_starts_regulated_move(void) {
+    FakeDesk fake;
+    desk::FlexiSpot c(fake);
+    desk::PresetTable table;
+    uint32_t t = 1000;
+    c.begin(t);
+    c.wake(t);
+    fake.height = 70.0f;
+    fake.emitHeight();
+    c.poll(t += 10);
+
+    table.at(1).mode = desk::PresetMode::TargetHeight;
+    table.at(1).heightCm = 105.0f;
+    TEST_ASSERT_TRUE(table.apply(1, c, t));
+    TEST_ASSERT_TRUE(c.targetActive());
+
+    for (int i = 0; i < 4000 && c.targetActive(); ++i) {
+        t += 10;
+        c.poll(t);
+        if (i % 5 == 0) {
+            fake.tick(0.2f);
+        }
+    }
+    TEST_ASSERT_EQUAL_INT(static_cast<int>(desk::MoveResult::Reached),
+                          static_cast<int>(c.lastMoveResult()));
+    TEST_ASSERT_FLOAT_WITHIN(1.5f, 105.0f, fake.height);
+}
+
+void test_presets_named_label_wins(void) {
+    desk::PresetTable table;
+    table.at(0).mode = desk::PresetMode::TargetHeight;
+    table.at(0).heightCm = 112.0f;
+    snprintf(table.at(0).name, desk::kPresetNameLen, "Stehen");
+    char label[desk::kPresetNameLen];
+    table.label(0, label, sizeof(label));
+    TEST_ASSERT_EQUAL_STRING("Stehen", label);
 }
 
 // ------------------------------------------------------------------ main ---
@@ -363,6 +457,11 @@ int main(int, char **) {
     RUN_TEST(test_controller_move_without_feedback_aborts);
     RUN_TEST(test_controller_preset_is_a_tap);
     RUN_TEST(test_controller_clamps_target_to_limits);
+    RUN_TEST(test_presets_defaults_map_to_box_slots);
+    RUN_TEST(test_presets_apply_box_slot_sends_preset_key);
+    RUN_TEST(test_presets_capture_switches_to_target_height);
+    RUN_TEST(test_presets_apply_target_height_starts_regulated_move);
+    RUN_TEST(test_presets_named_label_wins);
     return UNITY_END();
 }
 

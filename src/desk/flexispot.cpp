@@ -1,4 +1,4 @@
-#include "desk/desk_controller.h"
+#include "desk/flexispot.h"
 
 #include <math.h>
 
@@ -15,9 +15,9 @@ inline bool reached(uint32_t now, uint32_t deadline) {
 }
 } // namespace
 
-Controller::Controller(Io &io, const Config &config) : io_(io), config_(config) {}
+FlexiSpot::FlexiSpot(Io &io, const Config &config) : io_(io), config_(config) {}
 
-void Controller::begin(uint32_t nowMs) {
+void FlexiSpot::begin(uint32_t nowMs) {
     parser_.reset();
     io_.setWakeLine(false);
     lastSentKeys_ = loctek::KEY_NONE;
@@ -25,7 +25,7 @@ void Controller::begin(uint32_t nowMs) {
     lastHeightMs_ = nowMs;
 }
 
-void Controller::poll(uint32_t nowMs) {
+void FlexiSpot::poll(uint32_t nowMs) {
     pumpRx(nowMs);
 
     if (heightValid_ && elapsed(nowMs, lastHeightMs_, config_.heightStaleMs)) {
@@ -49,7 +49,7 @@ void Controller::poll(uint32_t nowMs) {
     pumpTx(nowMs);
 }
 
-void Controller::pumpRx(uint32_t nowMs) {
+void FlexiSpot::pumpRx(uint32_t nowMs) {
     loctek::Frame frame;
     int guard = 256; // pro Aufruf begrenzen, damit die UI nicht haengt
     while (io_.available() > 0 && guard-- > 0) {
@@ -91,7 +91,7 @@ void Controller::pumpRx(uint32_t nowMs) {
     }
 }
 
-void Controller::sendKeys(uint16_t keys) {
+void FlexiSpot::sendKeys(uint16_t keys) {
     uint8_t frame[loctek::kKeyFrameSize];
     const size_t len = loctek::buildKeyFrame(keys, frame, sizeof(frame));
     if (len > 0) {
@@ -99,7 +99,7 @@ void Controller::sendKeys(uint16_t keys) {
     }
 }
 
-void Controller::pumpTx(uint32_t nowMs) {
+void FlexiSpot::pumpTx(uint32_t nowMs) {
     if (!awake_) {
         return;
     }
@@ -115,7 +115,7 @@ void Controller::pumpTx(uint32_t nowMs) {
     sendKeys(heldKeys_);
 }
 
-void Controller::wake(uint32_t nowMs) {
+void FlexiSpot::wake(uint32_t nowMs) {
     if (!awake_) {
         io_.setWakeLine(true);
         parser_.reset();
@@ -125,27 +125,27 @@ void Controller::wake(uint32_t nowMs) {
     awakeUntilMs_ = nowMs + config_.keepAwakeMs;
 }
 
-void Controller::hold(uint16_t keys, uint32_t nowMs) {
+void FlexiSpot::hold(uint16_t keys, uint32_t nowMs) {
     targetActive_ = false;
     wake(nowMs);
     heldKeys_ = keys;
     holdLimited_ = false;
 }
 
-void Controller::release(uint32_t nowMs) {
+void FlexiSpot::release(uint32_t nowMs) {
     heldKeys_ = loctek::KEY_NONE;
     holdLimited_ = false;
     awakeUntilMs_ = nowMs + config_.keepAwakeMs;
 }
 
-void Controller::tap(uint16_t keys, uint32_t nowMs, uint32_t durationMs) {
+void FlexiSpot::tap(uint16_t keys, uint32_t nowMs, uint32_t durationMs) {
     wake(nowMs);
     heldKeys_ = keys;
     holdLimited_ = true;
     holdUntilMs_ = nowMs + durationMs;
 }
 
-void Controller::preset(uint8_t index, uint32_t nowMs) {
+void FlexiSpot::preset(uint8_t index, uint32_t nowMs) {
     uint16_t key;
     switch (index) {
     case 1: key = loctek::KEY_PRESET_1; break;
@@ -158,7 +158,7 @@ void Controller::preset(uint8_t index, uint32_t nowMs) {
     tap(key, nowMs);
 }
 
-void Controller::moveTo(float cm, uint32_t nowMs) {
+void FlexiSpot::moveTo(float cm, uint32_t nowMs) {
     if (cm < config_.minHeightCm) {
         cm = config_.minHeightCm;
     }
@@ -176,7 +176,7 @@ void Controller::moveTo(float cm, uint32_t nowMs) {
     holdLimited_ = false;
 }
 
-void Controller::stop(uint32_t nowMs) {
+void FlexiSpot::stop(uint32_t nowMs) {
     heldKeys_ = loctek::KEY_NONE;
     holdLimited_ = false;
     if (targetActive_) {
@@ -185,7 +185,7 @@ void Controller::stop(uint32_t nowMs) {
     awakeUntilMs_ = nowMs + config_.keepAwakeMs;
 }
 
-void Controller::finishMove(MoveResult result, uint32_t nowMs) {
+void FlexiSpot::finishMove(MoveResult result, uint32_t nowMs) {
     targetActive_ = false;
     heldKeys_ = loctek::KEY_NONE;
     holdLimited_ = false;
@@ -193,7 +193,7 @@ void Controller::finishMove(MoveResult result, uint32_t nowMs) {
     awakeUntilMs_ = nowMs + config_.keepAwakeMs;
 }
 
-void Controller::updateTarget(uint32_t nowMs) {
+void FlexiSpot::updateTarget(uint32_t nowMs) {
     if (!targetActive_) {
         return;
     }

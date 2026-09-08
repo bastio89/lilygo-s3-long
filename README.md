@@ -15,7 +15,7 @@ gleich mit Uhrzeit und Wetter füllt.
  │  └──────────────────┘  │ ▼  │  │   3   │ │   4   │  │  │        │
  │                        └────┘  └───────┘ └───────┘  └──┘        │
  └─────────────────────────────────────────────────────────────────┘
-       ← wischen →   Schreibtisch · Wetter · System
+       ← wischen →   Schreibtisch · Wetter · Einstellungen
 ```
 
 ## Stand
@@ -57,36 +57,49 @@ pio run -e t-display-s3-long -t upload \
 
 * **▲ / ▼** — gedrückt halten, der Tisch fährt; loslassen, er stoppt. Genau
   wie am Originalbedienteil.
-* **1 – 4** — Speicherplätze. Standardmäßig werden die Speicherplätze *der
-  Steuerbox* ausgelöst.
-* **Systemseite → „Geregelt fahren"** — schaltet auf eigene Zielhöhen um.
-  Dann fährt die Firmware selbst auf den Zentimeter genau, und ein **langer
-  Druck** auf eine der vier Tasten speichert die aktuelle Höhe darauf
-  (bleibt im NVS erhalten).
+* **Vier Speicherplätze** — jeder Platz ist einzeln eingestellt:
+  * *Box-Platz 1–4*: löst den gleichnamigen Speicherplatz **der Steuerbox**
+    aus, die Box fährt dann selbst.
+  * *Zielhöhe*: die Firmware regelt selbst auf den hinterlegten Wert.
+  Ein **langer Druck** auf eine Taste übernimmt die aktuelle Höhe und schaltet
+  den Platz damit auf Zielhöhe. Alles landet im NVS und übersteht einen
+  Neustart.
 * **■** — Not-Stopp.
-* Seiten mit einem Wisch wechseln: Schreibtisch · Wetter · System.
+* Seiten mit einem Wisch wechseln: Schreibtisch · Wetter · Einstellungen.
+
+Auf der Einstellungsseite: Helligkeit, Display-Ruhezeit, Fahrbereich,
+Belegung der vier Plätze, Touch-Spiegelung für die Einbaulage — und darunter
+eine Diagnosezeile mit WLAN, erkanntem Touchcontroller, gezählten Frames und
+CRC-Fehlern. Das ist beim Anschließen an die Steuerbox das wichtigste
+Werkzeug.
 
 ## Aufbau
 
 ```
 src/
-├── board/    Panel (AXS15231B, QSPI), Touch (CST3xx oder AXS15231B), Backlight
-├── desk/     Frameformat + CRC, Ablauflogik, Arduino-Transport
-├── net/      WLAN, NTP, Wetter von Open-Meteo
-├── ui/       LVGL-Oberfläche
+├── core/       Netz, Einstellungen (NVS), Zeit
+├── ui/         Dashboard + Seiten (Schreibtisch, Wetter, Einstellungen)
+├── desk/       Protokoll der Steuerbox, Fahrlogik, Speicherplätze
+├── services/   Hintergrunddienste hinter einer gemeinsamen Basisklasse
+├── board/      Panel (AXS15231B), Touch, Backlight — die Hardwareschicht
 └── main.cpp
-test/         Host-Tests für desk/ (laufen ohne Hardware)
-docs/         Verkabelung und Protokollbeschreibung
+test/           Host-Tests für desk/ (laufen ohne Hardware)
+docs/           Verkabelung und Protokollbeschreibung
 ```
 
-`src/desk/` ist bewusst frei von Arduino-Abhängigkeiten — Zeit und I/O kommen
-von außen herein. Deshalb lässt sich die komplette Fahrlogik gegen einen
-simulierten Tisch testen, ohne etwas zu flashen:
+`desk/`, inklusive der Speicherplatzlogik, ist bewusst frei von
+Arduino-Abhängigkeiten — Zeit und I/O kommen von außen herein. Deshalb lässt
+sich alles gegen einen simulierten Tisch testen, ohne etwas zu flashen:
 
 ```
 $ pio test -e native
-14 test cases: 14 succeeded
+19 test cases: 19 succeeded
 ```
+
+Ein neuer Dienst (Kalender, Feinstaub, Zugverbindungen …) erbt von
+`services::Service`, überschreibt `loop()` und wird in `main.cpp` mit
+`services::registerService()` angemeldet — Start, Takt und die Statusanzeige
+auf der Einstellungsseite laufen dann von selbst.
 
 ## Sicherheit
 

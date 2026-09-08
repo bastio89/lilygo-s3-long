@@ -1,26 +1,61 @@
-#include "net/weather.h"
+#include "services/weather.h"
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
-#include <WiFi.h>
 #include <WiFiClientSecure.h>
 
 #include "config.h"
+#include "core/network.h"
+#include "core/settings.h"
 
-namespace weather {
+namespace services {
 namespace {
 
-Data g_data;
-uint32_t g_nextFetchMs = 0;
-bool g_pending = true;
-
 constexpr uint32_t kRetryMs = 60000;
+WeatherService g_weather;
 
-bool fetch() {
-    if (WiFi.status() != WL_CONNECTED) {
-        return false;
+} // namespace
+
+WeatherService &weather() { return g_weather; }
+
+void WeatherService::begin() {
+    nextFetchMs_ = 0;
+    pending_ = true;
+    failures_ = 0;
+}
+
+void WeatherService::refresh() { pending_ = true; }
+
+const char *WeatherService::statusText() const {
+    if (data_.valid) {
+        return failures_ > 0 ? "veraltet" : "ok";
     }
+    return core::online() ? "kein Abruf" : "offline";
+}
+
+void WeatherService::loop(uint32_t nowMs) {
+    if (!pending_ && static_cast<int32_t>(nowMs - nextFetchMs_) < 0) {
+        return;
+    }
+    if (!core::online()) {
+        nextFetchMs_ = nowMs + kRetryMs;
+        return;
+    }
+    pending_ = false;
+    if (fetch()) {
+        failures_ = 0;
+        nextFetchMs_ = nowMs + WEATHER_REFRESH_MS;
+    } else {
+        if (failures_ < 255) {
+            ++failures_;
+        }
+        nextFetchMs_ = nowMs + kRetryMs;
+    }
+}
+
+bool WeatherService::fetch() {
+    const core::Settings &cfg = core::settings();
 
     char url[320];
     snprintf(url, sizeof(url),
@@ -30,7 +65,7 @@ bool fetch() {
              "weather_code,wind_speed_10m"
              "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max"
              "&timezone=auto&forecast_days=1",
-             static_cast<double>(LOCATION_LATITUDE), static_cast<double>(LOCATION_LONGITUDE));
+             static_cast<double>(cfg.latitude), static_cast<double>(cfg.longitude));
 
     WiFiClientSecure client;
     client.setInsecure(); // oeffentliche, unkritische Daten
@@ -48,12 +83,13 @@ bool fetch() {
         return false;
     }
 
-    JsonDocument doc;
     JsonDocument filter;
     filter["current"] = true;
     filter["daily"] = true;
-    const DeserializationError err = deserializeJson(doc, http.getStream(),
-                                                     DeserializationOption::Filter(filter));
+
+    JsonDocument doc;
+    const DeserializationError err =
+        deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
     http.end();
     if (err) {
         log_w("Wetter-JSON fehlerhaft: %s", err.c_str());
@@ -61,50 +97,27 @@ bool fetch() {
     }
 
     JsonObject current = doc["current"];
-    JsonObject daily = doc["daily"];
     if (current.isNull()) {
         return false;
     }
+    JsonObject daily = doc["daily"];
 
-    g_data.temperature = current["temperature_2m"] | 0.0f;
-    g_data.apparent = current["apparent_temperature"] | g_data.temperature;
-    g_data.humidity = current["relative_humidity_2m"] | 0;
-    g_data.windKmh = current["wind_speed_10m"] | 0.0f;
-    g_data.code = current["weather_code"] | 0;
+    data_.temperature = current["temperature_2m"] | 0.0f;
+    data_.apparent = current["apparent_temperature"] | data_.temperature;
+    data_.humidity = current["relative_humidity_2m"] | 0;
+    data_.windKmh = current["wind_speed_10m"] | 0.0f;
+    data_.code = current["weather_code"] | 0;
     if (!daily.isNull()) {
-        g_data.todayMax = daily["temperature_2m_max"][0] | g_data.temperature;
-        g_data.todayMin = daily["temperature_2m_min"][0] | g_data.temperature;
-        g_data.precipitationProb = daily["precipitation_probability_max"][0] | 0;
+        data_.todayMax = daily["temperature_2m_max"][0] | data_.temperature;
+        data_.todayMin = daily["temperature_2m_min"][0] | data_.temperature;
+        data_.precipitationProb = daily["precipitation_probability_max"][0] | 0;
     }
-    g_data.valid = true;
-    g_data.updatedMs = millis();
+    data_.valid = true;
+    data_.updatedMs = millis();
     return true;
 }
 
-} // namespace
-
-void begin() {
-    g_nextFetchMs = 0;
-    g_pending = true;
-}
-
-void requestRefresh() { g_pending = true; }
-
-void loop(uint32_t nowMs) {
-    if (!g_pending && static_cast<int32_t>(nowMs - g_nextFetchMs) < 0) {
-        return;
-    }
-    if (WiFi.status() != WL_CONNECTED) {
-        g_nextFetchMs = nowMs + kRetryMs;
-        return;
-    }
-    g_pending = false;
-    g_nextFetchMs = nowMs + (fetch() ? WEATHER_REFRESH_MS : kRetryMs);
-}
-
-const Data &data() { return g_data; }
-
-const char *description(int code) {
+const char *weatherDescription(int code) {
     switch (code) {
     case 0: return "Klar";
     case 1: return "Ueberwiegend klar";
@@ -138,7 +151,7 @@ const char *description(int code) {
     }
 }
 
-uint32_t accentColor(int code) {
+uint32_t weatherAccentColor(int code) {
     if (code <= 1) {
         return 0xFFC64Bu; // Sonne
     }
@@ -148,11 +161,8 @@ uint32_t accentColor(int code) {
     if (code == 3 || code == 45 || code == 48) {
         return 0x9AA5B1u; // bedeckt / Nebel
     }
-    if (code >= 71 && code <= 77) {
+    if ((code >= 71 && code <= 77) || code == 85 || code == 86) {
         return 0xCFE8FFu; // Schnee
-    }
-    if (code == 85 || code == 86) {
-        return 0xCFE8FFu;
     }
     if (code >= 95) {
         return 0xC77DFFu; // Gewitter
@@ -163,4 +173,4 @@ uint32_t accentColor(int code) {
     return 0x9AA5B1u;
 }
 
-} // namespace weather
+} // namespace services

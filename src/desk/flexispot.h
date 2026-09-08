@@ -1,7 +1,7 @@
 // Hardwareunabhaengige Ansteuerung einer LoctekMotion-/Flexispot-Steuerbox.
 //
 // Das echte Handpanel sendet permanent seinen Tastenzustand an die Steuerbox
-// (auch "keine Taste"). Genau das bildet dieser Controller nach: solange er
+// (auch "keine Taste"). Genau das bildet diese Klasse nach: solange sie
 // "wach" ist, geht alle `keyRepeatMs` ein Frame raus. Ein Tastendruck ist also
 // kein einzelnes Kommando, sondern ein gehaltener Zustand -- deshalb kann der
 // Tisch mit `hold()` / `release()` exakt wie mit den Originaltasten gefahren
@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "desk/loctek_protocol.h"
+#include "desk/protocol.h"
 
 namespace desk {
 
@@ -54,9 +54,9 @@ struct Config {
     float stallEpsilonCm = 0.2f;
 };
 
-class Controller {
+class FlexiSpot {
   public:
-    Controller(Io &io, const Config &config = Config{});
+    FlexiSpot(Io &io, const Config &config = Config{});
 
     void begin(uint32_t nowMs);
     // Muss regelmaessig (>= alle 10 ms) aufgerufen werden.
