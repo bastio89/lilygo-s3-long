@@ -35,10 +35,62 @@ desk::FlexiSpot *g_desk = nullptr;
 uint32_t g_lastUiTickMs = 0;
 
 #if DESK_SNIFFER
+// Mithoer-Modus fuer die erste Verkabelung. Zeigt zweierlei: was der Parser
+// als gueltiges Frame erkannt hat, und -- unabhaengig davon -- ob ueberhaupt
+// Bytes ankommen. Kommen Bytes, aber keine Frames, stimmt die Verkabelung
+// grundsaetzlich und es hakt an Pegel, Polaritaet oder Baudrate.
+constexpr size_t kRawTailSize = 24;
+uint8_t g_rawTail[kRawTailSize];
+size_t g_rawTailLen = 0;
+size_t g_rawTailPos = 0;
+uint32_t g_lastSummaryMs = 0;
+
+void logRawByte(uint8_t byte, void *) {
+    g_rawTail[g_rawTailPos] = byte;
+    g_rawTailPos = (g_rawTailPos + 1) % kRawTailSize;
+    if (g_rawTailLen < kRawTailSize) {
+        ++g_rawTailLen;
+    }
+}
+
 void logFrame(const loctek::Frame &frame, void *) {
-    Serial.printf("[desk] type=0x%02X len=%u payload=", frame.type, frame.payloadLen);
+    Serial.printf("[frame] typ=0x%02X ", frame.type);
     for (uint8_t i = 0; i < frame.payloadLen; ++i) {
         Serial.printf("%02X ", frame.payload[i]);
+    }
+    if (frame.type == loctek::kTypeDisplay && frame.payloadLen >= 3) {
+        loctek::DisplayValue value;
+        if (loctek::decodeDisplay(frame.payload, value)) {
+            if (value.numeric) {
+                Serial.printf("-> Anzeige \"%s\" = %.1f", value.text,
+                              static_cast<double>(value.value));
+            } else {
+                Serial.printf("-> Anzeige \"%s\" (keine Zahl)", value.text);
+            }
+        } else {
+            Serial.print("-> Segmentmuster unbekannt");
+        }
+    }
+    Serial.println();
+}
+
+void logSummary(uint32_t nowMs) {
+    if (static_cast<uint32_t>(nowMs - g_lastSummaryMs) < 2000) {
+        return;
+    }
+    g_lastSummaryMs = nowMs;
+
+    Serial.printf("[roh] %lu Bytes | %lu Frames ok | %lu CRC-Fehler | zuletzt: ",
+                  static_cast<unsigned long>(g_desk->bytesReceived()),
+                  static_cast<unsigned long>(g_desk->framesOk()),
+                  static_cast<unsigned long>(g_desk->crcErrors()));
+    if (g_rawTailLen == 0) {
+        Serial.print("nichts empfangen");
+    } else {
+        const size_t start = (g_rawTailPos + kRawTailSize - g_rawTailLen) % kRawTailSize;
+        for (size_t i = 0; i < g_rawTailLen; ++i) {
+            Serial.printf("%02X ", g_rawTail[(start + i) % kRawTailSize]);
+        }
     }
     Serial.println();
 }
@@ -100,6 +152,8 @@ void setup() {
     g_desk = &flexispot;
 #if DESK_SNIFFER
     flexispot.onFrame(logFrame, nullptr);
+    flexispot.onRawByte(logRawByte, nullptr);
+    Serial.println("Mithoer-Modus aktiv (DESK_SNIFFER=1)");
 #endif
     flexispot.begin(millis());
 
@@ -128,6 +182,10 @@ void loop() {
         syncDeskLimits();
         ui::dashboard::tick(now);
     }
+
+#if DESK_SNIFFER
+    logSummary(now);
+#endif
 
     handleDisplaySleep();
     board::displayLoop();

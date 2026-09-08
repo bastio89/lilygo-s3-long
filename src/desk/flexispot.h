@@ -92,6 +92,17 @@ class FlexiSpot {
         frameCtx_ = ctx;
     }
 
+    // Callback fuer jedes empfangene Byte, noch vor dem Parser. Zeigt beim
+    // Anschliessen, ob ueberhaupt etwas ankommt -- auch wenn die Framegrenzen
+    // nicht stimmen und deshalb kein Frame zustande kommt. Optional.
+    void onRawByte(void (*cb)(uint8_t, void *), void *ctx) {
+        rawCb_ = cb;
+        rawCtx_ = ctx;
+    }
+
+    // Anzahl empfangener Bytes, unabhaengig davon, ob sie Frames ergaben.
+    uint32_t bytesReceived() const { return bytesReceived_; }
+
     const Config &config() const { return config_; }
     void setConfig(const Config &c) { config_ = c; }
 
@@ -129,8 +140,12 @@ class FlexiSpot {
     uint32_t stallSinceMs_ = 0;
     MoveResult lastMoveResult_ = MoveResult::None;
 
+    uint32_t bytesReceived_ = 0;
+
     void (*frameCb_)(const loctek::Frame &, void *) = nullptr;
     void *frameCtx_ = nullptr;
+    void (*rawCb_)(uint8_t, void *) = nullptr;
+    void *rawCtx_ = nullptr;
 };
 
 } // namespace desk

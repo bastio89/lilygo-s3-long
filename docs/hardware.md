@@ -155,22 +155,38 @@ Zwei Möglichkeiten:
    * findet sich irgendwo mehr als 5 V, sofort abbrechen — dann ist es nicht
      die Signalbuchse.
 2. **Nur mithören.** Erst nur GND und RX (über Teiler) anschließen, TX und
-   PIN 20 noch offen lassen. Firmware mit Sniffer bauen:
+   PIN 20 noch offen lassen. Dafür gibt es ein eigenes Environment:
 
    ```bash
-   pio run -e t-display-s3-long -t upload \
-     --project-option="build_flags=-DDESK_SNIFFER=1"
+   pio run -e sniffer -t upload
    pio device monitor
    ```
 
-   An der Box eine Taste drücken — auf der Konsole müssen Frames mit
-   `type=0x12` erscheinen. Die Einstellungsseite der UI zählt gültige Frames und
-   CRC-Fehler mit; viele CRC-Fehler heißen: falscher Pin oder fehlende
-   Pegelwandlung.
-3. **Höhe prüfen.** Die große Zahl auf der Schreibtischseite muss der Anzeige
-   an der Box entsprechen. Falls dort Zoll statt Zentimeter steht,
-   ist die Steuerbox auf Zoll konfiguriert — dann `DESK_MIN_HEIGHT_CM` /
-   `DESK_MAX_HEIGHT_CM` entsprechend interpretieren.
+   Der Mithör-Modus gibt zweierlei aus. Alle zwei Sekunden eine Bilanz, und
+   für jedes erkannte Frame eine Zeile:
+
+   ```
+   [roh] 216 Bytes | 24 Frames ok | 0 CRC-Fehler | zuletzt: 9B 07 12 07 CF 6D ...
+   [frame] typ=0x12 07 CF 6D -> Anzeige "735" = 73.5
+   ```
+
+   Daran liest sich der Verkabelungszustand direkt ab:
+
+   | Beobachtung | Bedeutung |
+   |---|---|
+   | 0 Bytes | nichts kommt an — falscher Pin, RX/TX vertauscht, oder die Box schläft (dann Schritt 4 abwarten) |
+   | Bytes, aber 0 Frames | die Leitung stimmt grundsätzlich; es hakt an Pegel oder Baudrate |
+   | Frames ok, viele CRC-Fehler | Pegelwandlung fehlt oder ist zu weich |
+   | `typ=0x12` mit Höhe | alles richtig |
+   | nur andere Typen, nie `0x12` | die Box schickt ihre Höhe nicht über HS — siehe unten |
+
+   Kommen gar keine `0x12`-Frames, obwohl sonst alles sauber aussieht, dann
+   behält die Box die Höhe für ihre eigene Anzeige. Fahren per Taste und die
+   Speicherplätze der Box funktionieren trotzdem; nur das geregelte Anfahren
+   einer Zielhöhe fällt weg.
+3. **Höhe prüfen.** Die dekodierte Zahl im Mithör-Protokoll muss der Anzeige
+   an der Box entsprechen — die zeigt bei dieser Anlage Zentimeter, die
+   Vorgaben in `include/config.h` sind also in der richtigen Einheit.
 4. **Erst dann senden.** TX und PIN 20 anschließen und mit den Pfeiltasten
    testen. Finger auf der Taste = Tisch fährt, loslassen = Tisch stoppt.
 5. **Fahrbereich eintragen.** Die tatsächlichen Endlagen ablesen und auf der

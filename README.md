@@ -31,7 +31,7 @@ ersetzt nichts.
 | Display, Touch, LVGL-Oberfläche | fertig, **noch nicht auf echter Hardware verifiziert** |
 | WLAN, Uhrzeit, Wetter (Open-Meteo) | fertig |
 | Verkabelung zur Steuerbox | **offen** — RJ45-Belegung ausmessen, Pegelwandler, siehe [docs/hardware.md](docs/hardware.md) |
-| Höhenrückmeldung über HS | **noch unbestätigt** — die Box hat eigene Tasten und Anzeige, ob sie die Höhe auch über HS schickt, zeigt erst der Mithör-Schritt |
+| Höhenrückmeldung über HS | **noch unbestätigt** — die Box zeigt die Höhe in cm auf ihrem eigenen Display; ob sie sie auch über HS schickt, zeigt der Mithör-Modus |
 
 Alles außer der Verkabelung lässt sich schon jetzt aufspielen: ohne
 angeschlossenen Tisch zeigt die Schreibtischseite einfach „Steuerbox meldet
@@ -51,11 +51,19 @@ pio device monitor
 PlatformIO bringt Toolchain, LVGL 8.3 und ArduinoJson selbst mit. Die
 Boarddefinition liegt in `boards/T-Display-Long.json`.
 
-Beim ersten Anschließen an den Tisch hilft der Sniffer-Modus:
+Beim ersten Anschließen an den Tisch hilft der Mithör-Modus. Er gibt aus,
+was von der Steuerbox hereinkommt — dekodierte Frames *und* eine Rohbilanz,
+damit auch der Fall „es kommen Bytes an, aber keine gültigen Frames" sichtbar
+wird:
 
 ```bash
-pio run -e t-display-s3-long -t upload \
-  --project-option="build_flags=-DDESK_SNIFFER=1"
+pio run -e sniffer -t upload
+pio device monitor
+```
+
+```
+[roh] 216 Bytes | 24 Frames ok | 0 CRC-Fehler | zuletzt: 9B 07 12 07 CF 6D ...
+[frame] typ=0x12 07 CF 6D -> Anzeige "735" = 73.5
 ```
 
 ## Bedienung
@@ -98,7 +106,7 @@ sich alles gegen einen simulierten Tisch testen, ohne etwas zu flashen:
 
 ```
 $ pio test -e native
-19 test cases: 19 succeeded
+20 test cases: 20 succeeded
 ```
 
 Ein neuer Dienst (Kalender, Feinstaub, Zugverbindungen …) erbt von

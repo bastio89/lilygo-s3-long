@@ -205,6 +205,10 @@ class FakeDesk : public desk::Io {
         rxPos = 0;
     }
 
+    void injectRaw(const std::vector<uint8_t> &bytes) {
+        rx.insert(rx.end(), bytes.begin(), bytes.end());
+    }
+
     uint16_t lastKeys = 0;
 
   private:
@@ -335,6 +339,43 @@ void test_controller_preset_is_a_tap(void) {
     TEST_ASSERT_EQUAL_HEX16(KEY_NONE, fake.lastKeys);
 }
 
+// Der Rohbyte-Hook ist das Werkzeug fuer die erste Verkabelung: er muss auch
+// dann noch etwas zeigen, wenn kein einziges Frame zustande kommt.
+static uint32_t g_rawSeen = 0;
+static void countRawByte(uint8_t, void *ctx) {
+    ++(*static_cast<uint32_t *>(ctx));
+}
+
+void test_controller_reports_raw_bytes_even_without_frames(void) {
+    FakeDesk fake;
+    desk::FlexiSpot c(fake);
+    uint32_t seen = 0;
+    c.onRawByte(countRawByte, &seen);
+    uint32_t t = 1000;
+    c.begin(t);
+    c.wake(t);
+
+    // Muell ohne gueltige Framestruktur.
+    fake.injectRaw({0x11, 0x22, 0x33, 0x44, 0x55});
+    for (int i = 0; i < 5; ++i) {
+        c.poll(t += 10);
+    }
+    TEST_ASSERT_EQUAL_UINT32(5, seen);
+    TEST_ASSERT_EQUAL_UINT32(5, c.bytesReceived());
+    TEST_ASSERT_EQUAL_UINT32(0, c.framesOk());
+    TEST_ASSERT_FALSE(c.heightKnown());
+
+    // Danach ein gueltiges Frame: die Bytes werden weiter mitgezaehlt.
+    fake.height = 80.0f;
+    fake.emitHeight();
+    for (int i = 0; i < 5; ++i) {
+        c.poll(t += 10);
+    }
+    TEST_ASSERT_EQUAL_UINT32(14, seen); // 5 Muell + 9 Frame
+    TEST_ASSERT_EQUAL_UINT32(1, c.framesOk());
+    TEST_ASSERT_TRUE(c.heightKnown());
+}
+
 void test_controller_clamps_target_to_limits(void) {
     FakeDesk fake;
     desk::FlexiSpot c(fake);
@@ -457,6 +498,7 @@ int main(int, char **) {
     RUN_TEST(test_controller_move_without_feedback_aborts);
     RUN_TEST(test_controller_preset_is_a_tap);
     RUN_TEST(test_controller_clamps_target_to_limits);
+    RUN_TEST(test_controller_reports_raw_bytes_even_without_frames);
     RUN_TEST(test_presets_defaults_map_to_box_slots);
     RUN_TEST(test_presets_apply_box_slot_sends_preset_key);
     RUN_TEST(test_presets_capture_switches_to_target_height);

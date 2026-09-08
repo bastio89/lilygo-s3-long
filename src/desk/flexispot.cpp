@@ -57,6 +57,10 @@ void FlexiSpot::pumpRx(uint32_t nowMs) {
         if (b < 0) {
             break;
         }
+        ++bytesReceived_;
+        if (rawCb_) {
+            rawCb_(static_cast<uint8_t>(b), rawCtx_);
+        }
         if (!parser_.feed(static_cast<uint8_t>(b), frame)) {
             continue;
         }
