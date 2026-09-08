@@ -11,13 +11,17 @@ LVGL dreht per Software (`sw_rotate`, `LV_DISP_ROT_90`). Touchkoordinaten
 werden von LVGL automatisch mitgedreht — der Treiber liefert deshalb
 absichtlich rohe Panelkoordinaten (x 0…179, y 0…639).
 
+Damit die Software-Rotation mit dem AXS15231B stabil bleibt, richtet der
+Treiber jede Neuzeichnung auf die volle logische Breite und 40-Zeilen-Bänder
+aus. Die QSPI-Verbindung läuft mit 16 MHz.
+
 ### Belegte GPIOs
 
 | Funktion | GPIO |
 |---|---|
 | LCD CS / SCK / D0 / D1 / D2 / D3 / RST | 12 / 17 / 13 / 18 / 21 / 14 / 16 |
 | Backlight (PWM) | 1 |
-| Touch I2C SDA / SCL / IRQ / RST | 15 / 10 / 11 / 2 |
+| Touch I2C SDA / SCL / IRQ / RST | 15 / 10 / 11 / 2 (CST) bzw. 16 (AXS) |
 | PMU SY6970 (I2C) | 15 / 10 |
 | BOOT-Taster | 0 |
 
@@ -34,9 +38,9 @@ sowie `GND`, `3V3` und `VBUS`.
 ### Zwei Touch-Revisionen
 
 Je nach Fertigungslos sitzt der Touchcontroller entweder im AXS15231B selbst
-(I2C `0x3B`) oder es ist ein separater CST3xx (I2C `0x1A`). `board/touch.cpp`
-erkennt beim Start automatisch, welcher vorhanden ist — die Einstellungsseite
-der UI zeigt das Ergebnis an.
+(I2C `0x3B`) oder es ist ein separater CST3xx (I2C `0x1A`) beziehungsweise
+CST3530 (I2C `0x58`). `board/touch.cpp` erkennt beim Start automatisch,
+welcher vorhanden ist — die Einstellungsseite der UI zeigt das Ergebnis an.
 
 ## 2. Die Steuerbox
 

@@ -1,6 +1,7 @@
 #include "ui/dashboard.h"
 
 #include <Arduino.h>
+#include <string.h>
 
 #include "core/clock.h"
 #include "core/network.h"
@@ -23,6 +24,9 @@ lv_obj_t *g_titleLabel = nullptr;
 lv_obj_t *g_wifiLabel = nullptr;
 lv_obj_t *g_toast = nullptr;
 uint32_t g_toastUntilMs = 0;
+uint8_t g_currentPage = UINT8_MAX;
+bool g_wifiOnline = false;
+bool g_wifiStateKnown = false;
 
 const char *const kPageTitles[3] = {"Schreibtisch", "Wetter", "Einstellungen"};
 
@@ -55,6 +59,12 @@ uint8_t currentPage() {
         }
     }
     return 0;
+}
+
+void setLabelTextIfChanged(lv_obj_t *label, const char *text) {
+    if (strcmp(lv_label_get_text(label), text) != 0) {
+        lv_label_set_text(label, text);
+    }
 }
 
 } // namespace
@@ -110,15 +120,22 @@ void showPage(uint8_t index) {
 }
 
 void tick(uint32_t nowMs) {
-    lv_label_set_text(g_clockLabel, core::clockText());
-    lv_label_set_text(g_dateLabel, core::dateText());
+    setLabelTextIfChanged(g_clockLabel, core::clockText());
+    setLabelTextIfChanged(g_dateLabel, core::dateText());
 
     const uint8_t page = currentPage();
-    lv_label_set_text(g_titleLabel, kPageTitles[page]);
-    lv_obj_align(g_titleLabel, LV_ALIGN_CENTER, 0, 0);
+    if (page != g_currentPage) {
+        g_currentPage = page;
+        lv_label_set_text(g_titleLabel, kPageTitles[page]);
+        lv_obj_align(g_titleLabel, LV_ALIGN_CENTER, 0, 0);
+    }
 
-    lv_obj_set_style_text_color(g_wifiLabel,
-                                core::online() ? theme::accent() : theme::muted(), 0);
+    const bool online = core::online();
+    if (!g_wifiStateKnown || online != g_wifiOnline) {
+        g_wifiStateKnown = true;
+        g_wifiOnline = online;
+        lv_obj_set_style_text_color(g_wifiLabel, online ? theme::accent() : theme::muted(), 0);
+    }
 
     // Nur die sichtbare Seite aktualisieren.
     switch (page) {

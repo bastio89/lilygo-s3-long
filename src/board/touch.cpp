@@ -9,6 +9,7 @@ namespace board {
 namespace {
 
 constexpr uint8_t kAddrCst3xx = 0x1A;
+constexpr uint8_t kAddrCst3530 = 0x58;
 constexpr uint8_t kAddrAxs = 0x3B;
 
 TouchChip g_chip = TouchChip::None;
@@ -18,6 +19,14 @@ bool g_invertY = false;
 bool probe(uint8_t address) {
     Wire.beginTransmission(address);
     return Wire.endTransmission() == 0;
+}
+
+void resetTouch(uint8_t resetPin) {
+    pinMode(resetPin, OUTPUT);
+    digitalWrite(resetPin, LOW);
+    delay(20);
+    digitalWrite(resetPin, HIGH);
+    delay(60);
 }
 
 // --- CST3xx ---------------------------------------------------------------
@@ -58,6 +67,38 @@ bool cstRead(TouchPoint &point) {
     return true;
 }
 
+bool cst3530Read(TouchPoint &point) {
+    static const uint8_t kReadCommand[4] = {0xD0, 0x07, 0x00, 0x00};
+    static const uint8_t kAcknowledge[4] = {0xD0, 0x00, 0x02, 0xAB};
+    uint8_t buf[9];
+
+    Wire.beginTransmission(kAddrCst3530);
+    Wire.write(kReadCommand, sizeof(kReadCommand));
+    if (Wire.endTransmission() != 0) {
+        return false;
+    }
+    if (Wire.requestFrom(kAddrCst3530, static_cast<uint8_t>(sizeof(buf))) != sizeof(buf)) {
+        return false;
+    }
+    for (uint8_t &b : buf) {
+        b = Wire.read();
+    }
+
+    Wire.beginTransmission(kAddrCst3530);
+    Wire.write(kAcknowledge, sizeof(kAcknowledge));
+    Wire.endTransmission();
+
+    const uint8_t fingerCount = buf[3] & 0x0F;
+    const uint8_t event = buf[8] >> 4;
+    if (buf[2] != 0xFF || fingerCount == 0 || event == 0) {
+        return false;
+    }
+
+    point.x = static_cast<int16_t>(buf[4] | ((buf[7] & 0x0F) << 8));
+    point.y = static_cast<int16_t>(buf[5] | ((buf[7] & 0xF0) << 4));
+    return true;
+}
+
 // --- AXS15231B ------------------------------------------------------------
 bool axsRead(TouchPoint &point) {
     static const uint8_t kReadCmd[11] = {0xB5, 0xAB, 0xA5, 0x5A, 0x00, 0x00,
@@ -91,22 +132,19 @@ bool axsRead(TouchPoint &point) {
 } // namespace
 
 bool touchBegin() {
-    pinMode(TOUCH_RST, OUTPUT);
-    digitalWrite(TOUCH_RST, LOW);
-    delay(20);
-    digitalWrite(TOUCH_RST, HIGH);
-    delay(60);
+    resetTouch(TOUCH_RST);
 
     pinMode(TOUCH_IRQ, INPUT);
 
     Wire.begin(TOUCH_I2C_SDA, TOUCH_I2C_SCL, 400000);
 
-    if (probe(kAddrCst3xx)) {
+    if (probe(kAddrCst3530)) {
+        g_chip = TouchChip::CST3530;
+    } else if (probe(kAddrCst3xx)) {
         g_chip = TouchChip::CST3xx;
-    } else if (probe(kAddrAxs)) {
-        g_chip = TouchChip::AXS15231B;
     } else {
-        g_chip = TouchChip::None;
+        resetTouch(TFT_QSPI_RST);
+        g_chip = probe(kAddrAxs) ? TouchChip::AXS15231B : TouchChip::None;
     }
     return g_chip != TouchChip::None;
 }
@@ -116,6 +154,7 @@ TouchChip touchChip() { return g_chip; }
 const char *touchChipName() {
     switch (g_chip) {
     case TouchChip::CST3xx: return "CST3xx";
+    case TouchChip::CST3530: return "CST3530";
     case TouchChip::AXS15231B: return "AXS15231B";
     default: return "keiner";
     }
@@ -130,6 +169,7 @@ bool touchRead(TouchPoint &point) {
     bool pressed = false;
     switch (g_chip) {
     case TouchChip::CST3xx: pressed = cstRead(point); break;
+    case TouchChip::CST3530: pressed = cst3530Read(point); break;
     case TouchChip::AXS15231B: pressed = axsRead(point); break;
     default: return false;
     }

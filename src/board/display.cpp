@@ -34,11 +34,13 @@ const LcdCmd kInitSequence[] = {
 constexpr uint8_t kCmdColumnAddress = 0x2A;
 constexpr uint8_t kCmdRowAddress = 0x2B;
 constexpr int kBacklightChannel = 0;
+constexpr lv_coord_t kDrawBufferLines = 40;
 
 spi_device_handle_t g_spi = nullptr;
 lv_disp_draw_buf_t g_drawBuf;
 lv_color_t *g_buf0 = nullptr;
 lv_color_t *g_buf1 = nullptr;
+lv_color_t *g_flushBuf = nullptr;
 uint8_t g_brightness = 0;
 bool g_asleep = false;
 
@@ -85,6 +87,13 @@ void pushPixels(uint16_t x, uint16_t y, uint16_t w, uint16_t h, const uint16_t *
         if (!first) {
             digitalWrite(TFT_QSPI_CS, HIGH);
         }
+        // Der AXS15231B braucht zwischen zwei QSPI-Fortsetzungen eine kurze
+        // CS-Pause; die LilyGo-Referenz erzeugt sie ebenfalls.
+        volatile int csGap = 0;
+        for (int i = 0; i < 10; ++i) {
+            csGap >>= 1;
+        }
+        (void)csGap;
         digitalWrite(TFT_QSPI_CS, LOW);
         spi_device_polling_transmit(g_spi, reinterpret_cast<spi_transaction_t *>(&t));
 
@@ -137,12 +146,27 @@ void panelInit() {
             delay(20);
         }
     }
+
+}
+
+void rounderCb(lv_disp_drv_t *, lv_area_t *area) {
+    // Gleiche Geometrie fuer jede Rotationsausgabe: volle logische Breite,
+    // an den Zeichenpuffer ausgerichtete Zeilenbaender.
+    area->x1 = 0;
+    area->x2 = kScreenWidth - 1;
+    area->y1 = (area->y1 / kDrawBufferLines) * kDrawBufferLines;
+    area->y2 = ((area->y2 / kDrawBufferLines) + 1) * kDrawBufferLines - 1;
+    if (area->y2 >= kScreenHeight) {
+        area->y2 = kScreenHeight - 1;
+    }
 }
 
 void flushCb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color_t *color) {
     const uint16_t w = area->x2 - area->x1 + 1;
     const uint16_t h = area->y2 - area->y1 + 1;
-    pushPixels(area->x1, area->y1, w, h, reinterpret_cast<uint16_t *>(color));
+    const size_t pixels = static_cast<size_t>(w) * h;
+    memcpy(g_flushBuf, color, pixels * sizeof(lv_color_t));
+    pushPixels(area->x1, area->y1, w, h, reinterpret_cast<uint16_t *>(g_flushBuf));
     lv_disp_flush_ready(drv);
 }
 
@@ -169,14 +193,13 @@ bool displayBegin() {
     lv_init();
 
     // Partielles Neuzeichnen: zwei Streifenpuffer im internen DMA-faehigen RAM.
-    // Softwarerotation von LVGL braucht partielle Puffer (mit full_refresh
-    // lehnt LVGL 8.3 die Rotation ab).
-    const size_t lines = 40;
-    const size_t pixels = TFT_PANEL_WIDTH * lines;
+    // Die Pufferbreite entspricht der logischen LVGL-Breite vor der Rotation.
+    const size_t pixels = kScreenWidth * kDrawBufferLines;
     const uint32_t caps = MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL;
     g_buf0 = static_cast<lv_color_t *>(heap_caps_malloc(pixels * sizeof(lv_color_t), caps));
     g_buf1 = static_cast<lv_color_t *>(heap_caps_malloc(pixels * sizeof(lv_color_t), caps));
-    if (g_buf0 == nullptr || g_buf1 == nullptr) {
+    g_flushBuf = static_cast<lv_color_t *>(heap_caps_malloc(pixels * sizeof(lv_color_t), caps));
+    if (g_buf0 == nullptr || g_buf1 == nullptr || g_flushBuf == nullptr) {
         log_e("LVGL-Zeichenpuffer konnten nicht allokiert werden");
         return false;
     }
@@ -187,6 +210,7 @@ bool displayBegin() {
     drv.hor_res = TFT_PANEL_WIDTH; // physisch, LVGL dreht auf 640x180
     drv.ver_res = TFT_PANEL_HEIGHT;
     drv.flush_cb = flushCb;
+    drv.rounder_cb = rounderCb;
     drv.draw_buf = &g_drawBuf;
     drv.sw_rotate = 1;
     drv.rotated = LV_DISP_ROT_90;

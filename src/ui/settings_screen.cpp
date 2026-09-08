@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "board/display.h"
 #include "board/touch.h"
@@ -42,7 +43,11 @@ void renderStepper(const Stepper &s) {
     if (s.value == nullptr || s.target == nullptr) {
         return;
     }
-    lv_label_set_text_fmt(s.value, "%.1f%s", static_cast<double>(*s.target), s.suffix);
+    char text[32];
+    snprintf(text, sizeof(text), "%.1f%s", static_cast<double>(*s.target), s.suffix);
+    if (strcmp(lv_label_get_text(s.value), text) != 0) {
+        lv_label_set_text(s.value, text);
+    }
 }
 
 void stepperChange(Stepper *s, float direction) {
@@ -208,6 +213,7 @@ void create(lv_obj_t *parent, desk::FlexiSpot &desk) {
     lv_obj_set_style_pad_row(list, 6, 0);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_scroll_dir(list, LV_DIR_VER);
+    lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_MOMENTUM | LV_OBJ_FLAG_SCROLL_ELASTIC);
 
     // Anzeige
     {
@@ -339,20 +345,24 @@ void tick(uint32_t nowMs) {
         }
     }
 
-    lv_label_set_text_fmt(g_diagnostics,
-                          "WLAN: %s  %s  (%d dBm)\n"
-                          "Touch: %s     Zeit: %s\n"
-                          "Steuerbox: %s   Anzeige \"%s\"\n"
-                          "Frames %lu   CRC-Fehler %lu\n"
-                          "%s\n"
-                          "Heap %lu kB   Laufzeit %lu min",
-                          core::wifiStateText(), core::ipAddress(), core::rssi(),
-                          board::touchChipName(), core::clockSynced() ? "synchron" : "-",
-                          g_desk->heightKnown() ? "wach" : "keine Daten", g_desk->displayText(),
-                          static_cast<unsigned long>(g_desk->framesOk()),
-                          static_cast<unsigned long>(g_desk->crcErrors()), servicesLine,
-                          static_cast<unsigned long>(ESP.getFreeHeap() / 1024),
-                          static_cast<unsigned long>(nowMs / 60000UL));
+    char diagnostics[384];
+    snprintf(diagnostics, sizeof(diagnostics),
+             "WLAN: %s  %s  (%d dBm)\n"
+             "Touch: %s     Zeit: %s\n"
+             "Steuerbox: %s   Anzeige \"%s\"\n"
+             "Frames %lu   CRC-Fehler %lu\n"
+             "%s\n"
+             "Heap %lu kB   Laufzeit %lu min",
+             core::wifiStateText(), core::ipAddress(), core::rssi(), board::touchChipName(),
+             core::clockSynced() ? "synchron" : "-",
+             g_desk->heightKnown() ? "wach" : "keine Daten", g_desk->displayText(),
+             static_cast<unsigned long>(g_desk->framesOk()),
+             static_cast<unsigned long>(g_desk->crcErrors()), servicesLine,
+             static_cast<unsigned long>(ESP.getFreeHeap() / 1024),
+             static_cast<unsigned long>(nowMs / 60000UL));
+    if (strcmp(lv_label_get_text(g_diagnostics), diagnostics) != 0) {
+        lv_label_set_text(g_diagnostics, diagnostics);
+    }
 }
 
 } // namespace settings_screen

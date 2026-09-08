@@ -15,7 +15,7 @@
 
 #define TFT_SPI_HOST SPI2_HOST
 #define TFT_SPI_MODE SPI_MODE0
-#define TFT_SPI_FREQUENCY 32000000
+#define TFT_SPI_FREQUENCY 16000000
 
 // Physische Panelaufloesung (Hochformat). Die UI laeuft per LVGL-Rotation
 // im Querformat 640x180, siehe board/display.cpp.
@@ -26,8 +26,8 @@
 #define TFT_SEND_BUF_PIXELS (28800 / 2)
 
 // --- Touch + I2C ------------------------------------------------------------
-// Beide Boardrevisionen teilen sich diese Pins; der Controller ist entweder
-// ein CST3xx (0x1A) oder der Touchteil des AXS15231B (0x3B).
+// CST3xx/CST3530 verwenden GPIO 2 als Reset; bei AXS15231B liegt der
+// Touch-Reset auf der gemeinsamen Panel-Reset-Leitung GPIO 16.
 #define TOUCH_I2C_SDA 15
 #define TOUCH_I2C_SCL 10
 #define TOUCH_IRQ 11

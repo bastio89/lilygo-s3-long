@@ -142,7 +142,9 @@ void tick(uint32_t) {
     }
 
     if (g_desk->heightKnown()) {
-        lv_label_set_text_fmt(g_heightLabel, "%.1f", static_cast<double>(g_desk->heightCm()));
+        char height[16];
+        snprintf(height, sizeof(height), "%.1f", static_cast<double>(g_desk->heightCm()));
+        lv_label_set_text(g_heightLabel, height);
     } else if (g_desk->displayText()[0] != '\0') {
         lv_label_set_text(g_heightLabel, g_desk->displayText());
     } else {

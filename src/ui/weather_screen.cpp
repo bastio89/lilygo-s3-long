@@ -1,5 +1,7 @@
 #include "ui/weather_screen.h"
 
+#include <stdio.h>
+
 #include "core/clock.h"
 #include "core/settings.h"
 #include "services/weather.h"
@@ -49,21 +51,27 @@ void create(lv_obj_t *parent) {
 void tick(uint32_t) {
     const services::WeatherData &wx = services::weather().data();
 
-    lv_label_set_text_fmt(g_place, "%s   %s", core::settings().locationName,
-                          services::weather().statusText());
+    char place[96];
+    snprintf(place, sizeof(place), "%s   %s", core::settings().locationName,
+             services::weather().statusText());
+    lv_label_set_text(g_place, place);
 
     if (!wx.valid) {
         return;
     }
-    lv_label_set_text_fmt(g_temp, "%.0f C", static_cast<double>(wx.temperature));
+    char temperature[24];
+    snprintf(temperature, sizeof(temperature), "%.0f C", static_cast<double>(wx.temperature));
+    lv_label_set_text(g_temp, temperature);
     lv_label_set_text(g_desc, services::weatherDescription(wx.code));
     lv_obj_set_style_bg_color(g_dot, lv_color_hex(services::weatherAccentColor(wx.code)), 0);
-    lv_label_set_text_fmt(g_details,
-                          "min %.0f / max %.0f   gefuehlt %.0f\n"
-                          "%d %% Luftfeuchte   %.0f km/h Wind   %d %% Regen",
-                          static_cast<double>(wx.todayMin), static_cast<double>(wx.todayMax),
-                          static_cast<double>(wx.apparent), wx.humidity,
-                          static_cast<double>(wx.windKmh), wx.precipitationProb);
+    char details[128];
+    snprintf(details, sizeof(details),
+             "min %.0f / max %.0f   gefuehlt %.0f\n"
+             "%d %% Luftfeuchte   %.0f km/h Wind   %d %% Regen",
+             static_cast<double>(wx.todayMin), static_cast<double>(wx.todayMax),
+             static_cast<double>(wx.apparent), wx.humidity, static_cast<double>(wx.windKmh),
+             wx.precipitationProb);
+    lv_label_set_text(g_details, details);
 }
 
 } // namespace weather_screen
