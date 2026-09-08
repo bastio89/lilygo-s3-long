@@ -40,18 +40,52 @@ der UI zeigt das Ergebnis an.
 
 ## 2. Die Steuerbox
 
-Der Schreibtisch hat eine **Flexispot HCB103A-1** (Loctek). Sie hat eine
-RJ45-Buchse mit der Beschriftung **HS**, an der normalerweise das
-Handbedienteil hängt. Über genau diese Buchse läuft die Kommunikation.
+**Flexispot HCB103A-1** (Hersteller Loctek Ergonomic Technology). Angaben vom
+Typenschild:
 
-**Wichtig:** HCB103A-1 ist in den bekannten Projekten
+| | |
+|---|---|
+| Input | 29 V ⎓, 3,5 A |
+| Output | 29 V ⎓, 1,8 A |
+| Duty Cycle | **2 Minuten AN, 18 Minuten AUS** |
+
+### Die vier Anschlüsse
+
+Von links nach rechts, so wie sie auf dem Gehäuse beschriftet sind:
+
+| Buchse | Bedeutung | belegt |
+|---|---|---|
+| **HS** | **Hand Switch** — hier hängt das Bedienteil. Das ist unser Anschluss. | frei |
+| **DC IN** | Netzteil, 29 V | ja |
+| **M1** | Motor 1 | ja |
+| **M2** | Motor 2 (Zweimotorentische) | frei |
+
+> **M1 und M2 führen die Motorspannung von 29 V.** Dort darf niemals etwas vom
+> ESP32 angeschlossen werden. Sie sehen den Steckern von DC IN ähnlich (weißer
+> 2×3-Einsatz im schwarzen Gehäuse) — HS ist der einzige Anschluss, der für
+> Signale gedacht ist.
+
+### Nur eine HS-Buchse
+
+Manche Loctek-Boxen haben zwei Bedienteil-Anschlüsse, sodass Original und
+Eigenbau parallel laufen können. **Die HCB103A-1 hat nur einen.** Das Display
+*ersetzt* das Bedienteil also, es läuft nicht daneben.
+
+Ein Y-Kabel wäre technisch möglich, ist aber keine gute Idee: beide Panels
+senden fortlaufend auf derselben Leitung und würden sich gegenseitig stören.
+Wer eine Rückfallebene will, legt sich lieber ein Verlängerungskabel bei, um
+im Zweifel schnell wieder auf das Originalteil zu stecken.
+
+### Belegung der HS-Buchse
+
+**HCB103A-1 ist in den bekannten Projekten
 ([iMicknl/LoctekMotion_IoT](https://github.com/iMicknl/LoctekMotion_IoT))
-nicht ausdrücklich dokumentiert — es gibt dazu nur einen offenen
-Feature-Request. Das Rahmenprotokoll ist bei allen Loctek-Boxen gleich, die
-**Pinbelegung der RJ45-Buchse unterscheidet sich aber zwischen den Modellen**.
-Deshalb: vor dem Anschließen nachmessen (siehe Schritt 3).
+nicht dokumentiert** — es gibt dazu nur einen offenen Feature-Request. Das
+Rahmenprotokoll ist bei allen Loctek-Boxen gleich, die Pinbelegung des
+Bedienteil-Anschlusses unterscheidet sich aber zwischen den Modellen. Vor dem
+Anschließen also nachmessen (Schritt 3).
 
-### Belegung, die für die meisten Boxen gilt (HS13B-1 / HS01B-1)
+#### Falls HS eine RJ45-Buchse ist (HS13B-1 / HS01B-1)
 
 | RJ45-Pin | Ader (T568B) | Funktion | ans Board |
 |---|---|---|---|
@@ -89,9 +123,10 @@ Die Steuerbox arbeitet mit **5 V TTL**. Der ESP32-S3 ist **nicht 5-V-tolerant**.
 Zwei Möglichkeiten:
 
 1. **USB-C** — für Inbetriebnahme und Entwicklung. Immer damit anfangen.
-2. **5 V von der Steuerbox** (RJ45 Pin 8) auf den `VBUS`-Pin der Stiftleiste.
-   Das ist dieselbe Schiene, an der auch USB hängt, und speist die
-   SY6970-PMU. Zu bedenken:
+2. **5 V von der Steuerbox** auf den `VBUS`-Pin der Stiftleiste — aber nur,
+   wenn an der HS-Buchse tatsächlich 5 V anliegen (bei der RJ45-Variante
+   Pin 8; erst messen). Das ist dieselbe Schiene, an der auch USB hängt, und
+   speist die SY6970-PMU. Zu bedenken:
    * Der 5-V-Ausgang der Steuerbox ist für ein Bedienteil ausgelegt. Das
      Display zieht mit WLAN und voller Helligkeit **150–350 mA** — messen,
      bevor du dich darauf verlässt.
@@ -101,10 +136,16 @@ Zwei Möglichkeiten:
 
 ## 3. Inbetriebnahme, Schritt für Schritt
 
-1. **Messen, bevor du steckst.** Handbedienteil abziehen, RJ45-Breakout in die
-   HS-Buchse, mit dem Multimeter gegen Pin 7 (GND-Kandidat) messen:
-   ein Pin muss ~5 V führen (Pin 8), die Datenleitungen liegen im
-   Ruhezustand auf ~5 V (UART-Idle = High).
+1. **Messen, bevor du steckst.** Nur an der **HS**-Buchse messen, nie an
+   M1/M2 (29 V). Passendes Breakout in HS stecken, Netzteil eingesteckt
+   lassen und mit dem Multimeter alle Kontakte gegen Gehäusemasse durchgehen:
+   * ein Kontakt liegt fest auf 0 V → GND,
+   * einer auf ~5 V → Versorgung,
+   * zwei liegen im Leerlauf auf ~5 V und brechen beim Tastendruck am
+     Original-Bedienteil kurz ein → das sind die Datenleitungen (UART-Idle
+     ist High),
+   * findet sich irgendwo mehr als 5 V, sofort abbrechen — dann ist es nicht
+     die Signalbuchse.
 2. **Nur mithören.** Erst nur GND und RX (über Teiler) anschließen, TX und
    PIN 20 noch offen lassen. Firmware mit Sniffer bauen:
 
@@ -134,11 +175,16 @@ Zwei Möglichkeiten:
 
 * Der Klemmschutz sitzt in der Steuerbox und bleibt aktiv — die Firmware
   ersetzt nur das Bedienteil.
-* `desk::Controller` bricht eine geregelte Fahrt ab, wenn sich die Höhe
+* `desk::FlexiSpot` bricht eine geregelte Fahrt ab, wenn sich die Höhe
   nicht mehr ändert (`Stalled`), wenn zu viel Zeit vergeht (`TimedOut`) oder
   wenn gar keine Höhe zurückgemeldet wird (`NoFeedback`). Es wird nie blind
   gefahren.
 * Solange keine Taste gehalten wird, sendet die Firmware „keine Taste" —
   fällt sie aus oder stürzt ab, bleibt der Tisch stehen.
-* Das Original-Bedienteil kann als Rückfallebene angesteckt bleiben, wenn die
-  Box eine zweite RJ45-Buchse hat.
+* Die HCB103A-1 hat nur **eine** HS-Buchse. Das Display ersetzt das
+  Bedienteil, es läuft nicht daneben — für den Notfall das Originalteil
+  griffbereit halten statt es parallel zu stecken.
+* **Einschaltdauer beachten:** Das Typenschild nennt 2 Minuten AN auf
+  18 Minuten AUS, also 10 %. Einzelne Fahrten sind harmlos (der Hub dauert
+  wenige Sekunden), aber eine Automatik, die den Tisch minütlich bewegt,
+  überlastet Motor und Steuerbox.

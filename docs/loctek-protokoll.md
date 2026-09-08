@@ -51,7 +51,7 @@ Daraus ergeben sich die bekannten Byte-Folgen:
 
 **Ein Tastendruck ist kein einzelnes Kommando, sondern ein gehaltener
 Zustand.** Das echte Bedienteil sendet permanent, was gerade gedrückt ist —
-auch „nichts". Genau das macht `desk::Controller`: solange er wach ist, geht
+auch „nichts". Genau das macht `desk::FlexiSpot`: solange die Klasse wach ist, geht
 alle 100 ms ein Frame raus, und ein Zustandswechsel wird sofort gesendet
 statt auf den nächsten Takt zu warten.
 
