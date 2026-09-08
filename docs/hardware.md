@@ -49,32 +49,33 @@ Typenschild:
 | Output | 29 V ⎓, 1,8 A |
 | Duty Cycle | **2 Minuten AN, 18 Minuten AUS** |
 
-### Die vier Anschlüsse
+### Steuerbox und Bedienteil sind ein Gerät
 
-Von links nach rechts, so wie sie auf dem Gehäuse beschriftet sind:
+Bei dieser Box sitzen die Bedientasten samt der vier Speicherplätze direkt an
+der Vorderkante des Gehäuses — es gibt kein separates Handbedienteil an einem
+Kabel. Die Anschlüsse liegen auf der Rückseite.
 
-| Buchse | Bedeutung | belegt |
-|---|---|---|
-| **HS** | **Hand Switch** — hier hängt das Bedienteil. Das ist unser Anschluss. | frei |
-| **DC IN** | Netzteil, 29 V | ja |
-| **M1** | Motor 1 | ja |
-| **M2** | Motor 2 (Zweimotorentische) | frei |
+Das ist der angenehme Fall: **die Originaltasten bleiben, das Display kommt
+zusätzlich dazu.** Wenn an der Firmware etwas klemmt, fährt der Tisch weiter
+wie bisher. Ein Verlängerungskabel als Rückfallebene braucht es nicht.
 
-> **M1 und M2 führen die Motorspannung von 29 V.** Dort darf niemals etwas vom
-> ESP32 angeschlossen werden. Sie sehen den Steckern von DC IN ähnlich (weißer
-> 2×3-Einsatz im schwarzen Gehäuse) — HS ist der einzige Anschluss, der für
-> Signale gedacht ist.
+### Die Anschlüsse
 
-### Nur eine HS-Buchse
+Von der Rückseite aus gesehen:
 
-Manche Loctek-Boxen haben zwei Bedienteil-Anschlüsse, sodass Original und
-Eigenbau parallel laufen können. **Die HCB103A-1 hat nur einen.** Das Display
-*ersetzt* das Bedienteil also, es läuft nicht daneben.
+| Buchse | Bauform | Bedeutung | belegt |
+|---|---|---|---|
+| **M2** | 2×3, weiß | Motor 2 (Zweimotorentische) | frei |
+| **M1** | 2×3, weiß | Motor 1 | ja |
+| **DC IN** | 2×2, weiß | Netzteil, 29 V | ja |
+| **HS** | **RJ45** | Hand Switch — Anschluss für ein externes Bedienteil | **frei** |
 
-Ein Y-Kabel wäre technisch möglich, ist aber keine gute Idee: beide Panels
-senden fortlaufend auf derselben Leitung und würden sich gegenseitig stören.
-Wer eine Rückfallebene will, legt sich lieber ein Verlängerungskabel bei, um
-im Zweifel schnell wieder auf das Originalteil zu stecken.
+> **M1, M2 und DC IN führen 29 V.** Dort darf niemals etwas vom ESP32
+> angeschlossen werden. Die drei sehen einander ähnlich (weißer Einsatz im
+> schwarzen Gehäuse, 2×2 oder 2×3 Kontakte) — **HS ist die einzige
+> RJ45-Buchse und der einzige Signalanschluss.** Diese Bauartunterschiede sind
+> die beste Absicherung gegen ein Versehen: ein RJ45-Stecker passt schlicht in
+> keine der anderen Buchsen.
 
 ### Belegung der HS-Buchse
 
@@ -85,7 +86,13 @@ Rahmenprotokoll ist bei allen Loctek-Boxen gleich, die Pinbelegung des
 Bedienteil-Anschlusses unterscheidet sich aber zwischen den Modellen. Vor dem
 Anschließen also nachmessen (Schritt 3).
 
-#### Falls HS eine RJ45-Buchse ist (HS13B-1 / HS01B-1)
+Eine Sache ist bei dieser Box zusätzlich offen: Weil sie ihre Tasten und ihre
+Anzeige selbst bedient, ist nicht gesagt, dass sie die Höhe auch über HS
+hinausschickt. Genau das klärt der Mithör-Schritt der Inbetriebnahme — und
+davon hängt ab, ob geregeltes Fahren auf eine Zielhöhe möglich ist oder ob es
+bei „Taste halten" und den Speicherplätzen der Box bleibt.
+
+#### Wahrscheinlichste Belegung (wie HS13B-1 / HS01B-1)
 
 | RJ45-Pin | Ader (T568B) | Funktion | ans Board |
 |---|---|---|---|
@@ -137,13 +144,14 @@ Zwei Möglichkeiten:
 ## 3. Inbetriebnahme, Schritt für Schritt
 
 1. **Messen, bevor du steckst.** Nur an der **HS**-Buchse messen, nie an
-   M1/M2 (29 V). Passendes Breakout in HS stecken, Netzteil eingesteckt
-   lassen und mit dem Multimeter alle Kontakte gegen Gehäusemasse durchgehen:
+   M1, M2 oder DC IN (29 V). RJ45-Breakout in HS stecken, Netzteil
+   eingesteckt lassen und mit dem Multimeter alle acht Pins gegen Pin 7
+   (GND-Kandidat) durchgehen:
    * ein Kontakt liegt fest auf 0 V → GND,
    * einer auf ~5 V → Versorgung,
-   * zwei liegen im Leerlauf auf ~5 V und brechen beim Tastendruck am
-     Original-Bedienteil kurz ein → das sind die Datenleitungen (UART-Idle
-     ist High),
+   * zwei liegen im Leerlauf auf ~5 V → die Datenleitungen (UART-Idle ist
+     High); beim Drücken einer Taste an der Box kann eine davon kurz
+     einbrechen,
    * findet sich irgendwo mehr als 5 V, sofort abbrechen — dann ist es nicht
      die Signalbuchse.
 2. **Nur mithören.** Erst nur GND und RX (über Teiler) anschließen, TX und
@@ -155,12 +163,12 @@ Zwei Möglichkeiten:
    pio device monitor
    ```
 
-   Am Handbedienteil eine Taste drücken — auf der Konsole müssen Frames mit
+   An der Box eine Taste drücken — auf der Konsole müssen Frames mit
    `type=0x12` erscheinen. Die Einstellungsseite der UI zählt gültige Frames und
    CRC-Fehler mit; viele CRC-Fehler heißen: falscher Pin oder fehlende
    Pegelwandlung.
 3. **Höhe prüfen.** Die große Zahl auf der Schreibtischseite muss der Anzeige
-   am Original-Bedienteil entsprechen. Falls dort Zoll statt Zentimeter steht,
+   an der Box entsprechen. Falls dort Zoll statt Zentimeter steht,
    ist die Steuerbox auf Zoll konfiguriert — dann `DESK_MIN_HEIGHT_CM` /
    `DESK_MAX_HEIGHT_CM` entsprechend interpretieren.
 4. **Erst dann senden.** TX und PIN 20 anschließen und mit den Pfeiltasten
@@ -174,16 +182,15 @@ Zwei Möglichkeiten:
 ## 4. Sicherheit
 
 * Der Klemmschutz sitzt in der Steuerbox und bleibt aktiv — die Firmware
-  ersetzt nur das Bedienteil.
+  bedient sie nur so, wie es ein zusätzliches Bedienteil täte.
 * `desk::FlexiSpot` bricht eine geregelte Fahrt ab, wenn sich die Höhe
   nicht mehr ändert (`Stalled`), wenn zu viel Zeit vergeht (`TimedOut`) oder
   wenn gar keine Höhe zurückgemeldet wird (`NoFeedback`). Es wird nie blind
   gefahren.
 * Solange keine Taste gehalten wird, sendet die Firmware „keine Taste" —
   fällt sie aus oder stürzt ab, bleibt der Tisch stehen.
-* Die HCB103A-1 hat nur **eine** HS-Buchse. Das Display ersetzt das
-  Bedienteil, es läuft nicht daneben — für den Notfall das Originalteil
-  griffbereit halten statt es parallel zu stecken.
+* Die Tasten an der Box bleiben funktionsfähig — das Display kommt an HS
+  zusätzlich dazu und ist damit jederzeit abziehbar.
 * **Einschaltdauer beachten:** Das Typenschild nennt 2 Minuten AN auf
   18 Minuten AUS, also 10 %. Einzelne Fahrten sind harmlos (der Hub dauert
   wenige Sekunden), aber eine Automatik, die den Tisch minütlich bewegt,

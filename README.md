@@ -1,9 +1,13 @@
 # Schreibtischsteuerung auf dem LilyGo T-Display-S3 Long
 
-Firmware, die das Handbedienteil eines höhenverstellbaren **Flexispot**-Tisches
-(Steuerbox **HCB103A-1**, Loctek) durch das Touchdisplay eines
-**LilyGo T-Display-S3 Long** ersetzt — und den Platz auf den 640 x 180 Pixeln
-gleich mit Uhrzeit und Wetter füllt.
+Firmware, die einen höhenverstellbaren **Flexispot**-Tisch (Steuerbox
+**HCB103A-1**, Loctek) über das Touchdisplay eines **LilyGo T-Display-S3 Long**
+bedient — und den Platz auf den 640 x 180 Pixeln gleich mit Uhrzeit und Wetter
+füllt.
+
+Das Display hängt an der freien **HS**-Buchse der Steuerbox. Die Tasten an der
+Box selbst bleiben dabei funktionsfähig, das Display kommt also dazu und
+ersetzt nichts.
 
 ```
  ┌─────────────────────────────────────────────────────────────────┐
@@ -26,7 +30,8 @@ gleich mit Uhrzeit und Wetter füllt.
 | Fahrlogik (halten, Speicherplätze, geregeltes Anfahren) | fertig, mit Host-Tests |
 | Display, Touch, LVGL-Oberfläche | fertig, **noch nicht auf echter Hardware verifiziert** |
 | WLAN, Uhrzeit, Wetter (Open-Meteo) | fertig |
-| Verkabelung zur Steuerbox | **muss noch gemessen und gelötet werden**, siehe [docs/hardware.md](docs/hardware.md) |
+| Verkabelung zur Steuerbox | **offen** — RJ45-Belegung ausmessen, Pegelwandler, siehe [docs/hardware.md](docs/hardware.md) |
+| Höhenrückmeldung über HS | **noch unbestätigt** — die Box hat eigene Tasten und Anzeige, ob sie die Höhe auch über HS schickt, zeigt erst der Mithör-Schritt |
 
 Alles außer der Verkabelung lässt sich schon jetzt aufspielen: ohne
 angeschlossenen Tisch zeigt die Schreibtischseite einfach „Steuerbox meldet
@@ -56,7 +61,7 @@ pio run -e t-display-s3-long -t upload \
 ## Bedienung
 
 * **▲ / ▼** — gedrückt halten, der Tisch fährt; loslassen, er stoppt. Genau
-  wie am Originalbedienteil.
+  wie mit den Tasten an der Box.
 * **Vier Speicherplätze** — jeder Platz ist einzeln eingestellt:
   * *Box-Platz 1–4*: löst den gleichnamigen Speicherplatz **der Steuerbox**
     aus, die Box fährt dann selbst.
@@ -103,8 +108,9 @@ auf der Einstellungsseite laufen dann von selbst.
 
 ## Sicherheit
 
-Der Klemmschutz sitzt in der Steuerbox und bleibt unangetastet — ersetzt wird
-nur das Bedienteil. Die Firmware sendet fortlaufend den aktuellen
+Der Klemmschutz sitzt in der Steuerbox und bleibt unangetastet — die Firmware
+bedient sie nur so, wie es ein zusätzliches Bedienteil täte, und die
+Originaltasten funktionieren weiter. Die Firmware sendet fortlaufend den aktuellen
 Tastenzustand; fällt sie aus, sieht die Box „keine Taste" und der Tisch bleibt
 stehen. Geregelte Fahrten brechen bei Blockade, Zeitüberschreitung oder
 fehlender Höhenrückmeldung ab und fahren nie blind.
