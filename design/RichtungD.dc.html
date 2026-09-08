@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Space+Grotesk:wght@400;700&family=Archivo:wght@500;700&family=Spectral:wght@500;600&family=Public+Sans:wght@400;600&family=Montserrat:wght@400;600&display=swap">
+<style>body{margin:0;background:#0B0D10;-webkit-font-smoothing:antialiased}
+.scr{position:relative;width:640px;height:180px;overflow:hidden;box-sizing:border-box}
+.d{font-family:Archivo,Montserrat,sans-serif;color:#FFFFFF;background:#101014}
+.d.fahrt{background:#123A63}
+.d .top{position:absolute;left:0;top:0;width:640px;height:18px;font-size:11px;
+ color:rgba(255,255,255,.45)}
+.d .top .l{position:absolute;left:16px;line-height:18px}
+.d .top .r{position:absolute;right:16px;line-height:18px;color:rgba(255,255,255,.75)}
+.d .split{position:absolute;left:320px;width:1px;background:rgba(255,255,255,.16)}
+.d .num{position:absolute;left:0;right:0;top:28px;text-align:center;font-weight:700;
+ font-size:58px;line-height:58px;letter-spacing:-1px}
+.d .num i{font-style:normal;font-size:18px;font-weight:500;color:rgba(255,255,255,.55);margin-left:6px}
+.d .st{position:absolute;left:0;right:0;top:94px;text-align:center;font-size:15px;
+ color:rgba(255,255,255,.7)}
+.d .arw{position:absolute;top:60px}
+.d .arw u{display:block;text-decoration:none;font-size:11px;text-align:center;margin-top:8px;
+ color:rgba(255,255,255,.5)}
+.d .strip{position:absolute;left:0;top:152px;width:640px;height:28px;display:flex;
+ border-top:1px solid rgba(255,255,255,.16)}
+.d .strip div{width:160px;height:27px;display:flex;align-items:center;justify-content:center;
+ font-size:13px;font-weight:500;color:rgba(255,255,255,.85);border-left:1px solid rgba(255,255,255,.12);
+ box-sizing:border-box}
+.d .strip div:first-child{border-left:0}
+.d .stopbar{position:absolute;left:0;top:150px;width:640px;height:30px;background:#E23E32;
+ display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;
+ letter-spacing:2px}
+.d .prog{position:absolute;left:120px;top:124px;width:400px;height:3px;background:rgba(255,255,255,.22)}
+.d .prog span{display:block;height:3px;background:#FFFFFF;width:172px}
+</style>
+</helmet>
+<div class="scr d">
+<div class="top"><div class="l">Schreibtisch</div><div class="r">13:45</div></div><div class="split" style="top:118px;height:34px"></div><div class="num">73,5<i>cm</i></div><div class="st">bereit</div><div class="arw" style="left:52px"><svg width="40" height="25" viewBox="0 0 26 16"><path d="M13 15 L1 1 L25 1 Z" fill="rgba(255,255,255,.9)"/></svg><u>runter</u></div><div class="arw" style="left:548px"><svg width="40" height="25" viewBox="0 0 26 16"><path d="M13 1 L25 15 L1 15 Z" fill="rgba(255,255,255,.9)"/></svg><u>hoch</u></div><div class="strip"><div>Sitzen</div><div>Stehen</div><div>Platz 3</div><div>Platz 4</div></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -4,21 +4,25 @@ const FONT = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?fam
 
 const CSS = `
 body{margin:0;background:#0B0D10;font-family:Montserrat,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-.dev{position:relative;width:640px;height:180px;overflow:hidden;box-sizing:border-box;
- --bg:#0E1116;--panel:#191F27;--raise:#242C37;--line:#2E3743;
- --tx:#F2F5F8;--tx2:#9AA6B4;--tx3:#6B7684;
+.dev,.sys{--bg:#0E1116;--panel:#191F27;--raise:#242C37;--line:#2E3743;
+ --tx:#F2F5F8;--tx2:#9AA6B4;--tx3:#6B7684;--txdis:#48515D;
  --acc:#4FA3FF;--accs:#8CC5FF;--good:#5BD68A;--warn:#FFA23D;--bad:#FF5A52;
+ --stopbg:#2A1A1E;--dotoff:#3A4553;--thumb:#465262}
+.dev{position:relative;width:640px;height:180px;overflow:hidden;box-sizing:border-box;
  background:var(--bg);color:var(--tx)}
 .dev.nacht{--bg:#070A0D;--panel:#10141A;--raise:#161C24;--line:#1E2630;
- --tx:#C9D3DE;--tx2:#7C8794;--tx3:#59636F;--acc:#3D82CC;--accs:#5AA0E6;--warn:#C97F30}
+ --tx:#C9D3DE;--tx2:#7C8794;--tx3:#59636F;--txdis:#333C46;
+ --acc:#3D82CC;--accs:#5AA0E6;--good:#3E9463;--warn:#C97F30;--bad:#A33B34;
+ --stopbg:#1A1216;--dotoff:#232B35;--thumb:#2A323C}
 
 .bar{position:absolute;left:0;top:0;width:640px;height:28px}
 .bar .hgt{position:absolute;left:12px;top:0;height:28px;line-height:28px;font-size:16px;font-weight:600}
 .bar .hgt i{font-style:normal;font-size:12px;font-weight:400;color:var(--tx2);margin-left:3px}
 .bar .sep{position:absolute;left:120px;top:8px;width:1px;height:12px;background:var(--line)}
-.bar .pg{position:absolute;left:132px;top:0;height:28px;line-height:28px;font-size:14px;color:var(--tx2)}
+.bar .pg{position:absolute;left:132px;top:0;height:28px;line-height:28px;font-size:14px;
+ color:var(--tx2);max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .bar .dots{position:absolute;left:287px;top:12px;display:flex;gap:5px;align-items:center}
-.bar .dots b{width:4px;height:4px;border-radius:2px;background:#3A4553;display:block}
+.bar .dots b{width:4px;height:4px;border-radius:2px;background:var(--dotoff);display:block}
 .bar .dots b.on{width:12px;background:var(--acc)}
 .bar .dat{position:absolute;left:452px;top:0;width:84px;text-align:right;height:28px;line-height:28px;font-size:12px;color:var(--tx3)}
 .bar .clk{position:absolute;left:544px;top:0;width:56px;text-align:right;height:28px;line-height:28px;font-size:16px;font-weight:600}
@@ -36,7 +40,9 @@ body{margin:0;background:#0B0D10;font-family:Montserrat,system-ui,-apple-system,
 .val i{font-style:normal;font-size:20px;font-weight:400;color:var(--tx2);margin-left:6px;letter-spacing:0}
 .val.dim{color:var(--tx3)}
 .val.warn{color:var(--warn)}
-.sub{position:absolute;left:20px;top:98px;font-size:16px;color:var(--tx2);white-space:nowrap}
+.val.bad{color:var(--bad)}
+.sub{position:absolute;left:20px;top:98px;font-size:16px;color:var(--tx2);white-space:nowrap;
+ max-width:206px;overflow:hidden;text-overflow:ellipsis}
 .sub.acc{color:var(--acc)}.sub.warn{color:var(--warn)}.sub.bad{color:var(--bad)}
 .mid{position:absolute;left:20px;top:44px;font-size:24px;font-weight:600;line-height:1.15;width:206px;
  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -49,7 +55,7 @@ body{margin:0;background:#0B0D10;font-family:Montserrat,system-ui,-apple-system,
 .btn.on{background:var(--acc);color:#0E1116}
 .btn.on small{color:#0E1116;opacity:.65}
 .btn.hint{box-shadow:inset 0 0 0 2px var(--acc)}
-.btn.dis{color:var(--tx3)}.btn.dis small{color:#48515D}
+.btn.dis{color:var(--tx3)}.btn.dis small{color:var(--txdis)}
 .up{left:260px;top:8px;width:96px;height:64px}
 .dn{left:260px;top:80px;width:96px;height:64px}
 .tall{left:260px;top:8px;width:96px;height:136px}
@@ -58,13 +64,13 @@ body{margin:0;background:#0B0D10;font-family:Montserrat,system-ui,-apple-system,
 .p3{left:364px;top:80px;width:108px;height:64px}
 .p4{left:480px;top:80px;width:108px;height:64px}
 .stop{position:absolute;left:596px;top:8px;width:36px;height:136px;border-radius:8px;
- background:#2A1A1E;display:flex;align-items:center;justify-content:center}
+ background:var(--stopbg);display:flex;align-items:center;justify-content:center}
 .stop.hot{background:var(--bad)}
 
 .prog{position:absolute;left:20px;height:4px;border-radius:2px;background:var(--line)}
 .prog span{display:block;height:4px;border-radius:2px;background:var(--acc)}
 
-.stat{position:absolute;background:var(--panel);border-radius:8px;box-sizing:border-box;padding:10px 12px}
+.stat{position:absolute;background:var(--panel);border-radius:8px;box-sizing:border-box;padding:8px 12px}
 .stat u{display:block;text-decoration:none;font-size:12px;color:var(--tx3)}
 .stat b{display:block;font-size:20px;font-weight:600;margin-top:4px}
 
@@ -74,25 +80,25 @@ body{margin:0;background:#0B0D10;font-family:Montserrat,system-ui,-apple-system,
 .pill{background:var(--raise);border-radius:6px;height:28px;display:flex;align-items:center;
  padding:0 10px;gap:8px;font-size:14px;color:var(--tx)}
 .step{background:var(--raise);border-radius:6px;width:30px;height:28px;display:flex;
- align-items:center;justify-content:center;font-size:18px;font-weight:600;color:var(--tx)}
+ align-items:center;justify-content:center;font-size:20px;font-weight:600;color:var(--tx)}
 .num{font-size:16px;font-weight:600;min-width:46px;text-align:center}
 .sl{position:relative;width:200px;height:28px;display:flex;align-items:center}
 .sl .tr{position:absolute;left:0;right:0;height:4px;border-radius:2px;background:var(--line)}
 .sl .fl{position:absolute;left:0;height:4px;border-radius:2px;background:var(--acc)}
 .sl .kn{position:absolute;width:18px;height:18px;border-radius:9px;background:var(--acc)}
 .scroll{position:absolute;left:634px;top:8px;width:2px;height:136px;border-radius:1px;background:var(--line)}
-.scroll span{display:block;width:2px;border-radius:1px;background:#465262}
+.scroll span{display:block;width:2px;border-radius:1px;background:var(--thumb)}
 
 .lrow{position:absolute;background:var(--panel);border-radius:8px;box-sizing:border-box}
 .lrow .t{position:absolute;left:14px;top:0;bottom:0;display:flex;align-items:center;
- font-size:16px;font-weight:600;color:var(--acc)}
+ font-size:16px;font-weight:600;color:var(--tx)}
 .lrow .n{position:absolute;left:66px;top:0;bottom:0;display:flex;align-items:center;
- font-size:16px;color:var(--tx);max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+ font-size:16px;color:var(--tx2);max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .lrow .d{position:absolute;right:14px;top:0;bottom:0;display:flex;align-items:center;
  font-size:12px;color:var(--tx3)}
 
 .card{position:absolute;background:var(--panel);border-radius:8px;box-sizing:border-box;padding:10px 12px}
-.card .cb{position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:8px 0 0 8px;background:transparent}
+.card .cb{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:8px 0 0 8px;background:transparent}
 .card.act .cb{background:var(--acc)}
 .card n{display:block;font-size:16px;font-weight:600;color:var(--tx);font-style:normal}
 .card v{display:block;font-size:12px;color:var(--tx3);margin-top:5px;font-style:normal;
@@ -118,7 +124,7 @@ const arrow = (dir, c = 'currentColor') =>
     ? '<svg width="30" height="18" viewBox="0 0 30 18"><path d="M15 1 L29 17 L1 17 Z" fill="' + c + '"/></svg>'
     : '<svg width="30" height="18" viewBox="0 0 30 18"><path d="M15 17 L1 1 L29 1 Z" fill="' + c + '"/></svg>';
 
-const stopSq = (c = '#FF5A52') =>
+const stopSq = (c = 'var(--bad)') =>
   '<svg width="16" height="16" viewBox="0 0 16 16"><rect x="0" y="0" width="16" height="16" rx="2" fill="' + c + '"/></svg>';
 
 const play = (c = 'currentColor') =>
@@ -136,6 +142,7 @@ const chev = (c = 'var(--tx2)') =>
   '<svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1 L5 5 L9 1" stroke="' + c + '" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>';
 
 const dots = (active, n = 7) => {
+  if (active < 0) return '<div class="dots"></div>';
   let out = '';
   for (let i = 0; i < n; i++) out += '<b class="' + (i === active ? 'on' : '') + '"></b>';
   return '<div class="dots">' + out + '</div>';
@@ -145,7 +152,7 @@ function bar({ hgt = '73,5', page = 'Schreibtisch', active = 0, clock = '13:45',
                date = 'Mo 8. Sep', net = 'on', unit = 'cm' }) {
   const h = hgt === null
     ? '<div class="hgt" style="color:var(--tx3)">– – –</div>'
-    : '<div class="hgt">' + hgt + '<i>' + unit + '</i></div>';
+    : '<div class="hgt">' + hgt + (unit ? '<i>' + unit + '</i>' : '') + '</div>';
   return '<div class="bar">' + h +
     '<div class="sep"></div><div class="pg">' + page + '</div>' + dots(active) +
     '<div class="dat">' + date + '</div><div class="clk">' + clock + '</div>' +
@@ -153,7 +160,7 @@ function bar({ hgt = '73,5', page = 'Schreibtisch', active = 0, clock = '13:45',
 }
 
 function page({ file, title, body, barCfg = {}, nacht = false, extra = '' }) {
-  const html = '<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n' +
+  const html = '<!doctype html>\n<html lang="de">\n<head>\n<meta charset="utf-8">\n' +
     '<script src="./support.js"><\/script>\n</head>\n<body>\n<x-dc>\n<helmet>\n' + FONT +
     '\n<style>' + CSS + extra + '</style>\n</helmet>\n' +
     '<div class="dev' + (nacht ? ' nacht' : '') + '">\n' + bar(barCfg) +
@@ -165,7 +172,7 @@ function page({ file, title, body, barCfg = {}, nacht = false, extra = '' }) {
 /* ---------------------------------------------------------------- Seiten --- */
 
 const stopBtn = (hot = false) =>
-  '<div class="stop' + (hot ? ' hot' : '') + '">' + stopSq(hot ? '#0E1116' : '#FF5A52') + '</div>';
+  '<div class="stop' + (hot ? ' hot' : '') + '">' + stopSq(hot ? 'var(--bg)' : 'var(--bad)') + '</div>';
 
 const upDn = (state = '') =>
   '<div class="btn up' + (state === 'up' ? ' on' : state === 'hintup' ? ' hint' : '') + '">' +
@@ -200,7 +207,7 @@ boards.push(page({
     '<div class="tile focus"><div class="band acc"></div>' +
     '<div class="val">89,2<i>cm</i></div>' +
     '<div class="prog" style="top:88px;width:206px"><span style="width:88px"></span></div>' +
-    '<div class="sub acc" style="top:104px;font-size:16px">Ziel 112,0 cm</div></div>' +
+    '<div class="sub acc" style="top:104px">Ziel 112,0 cm</div></div>' +
     upDn('hintup') + presets() + stopBtn(true)
 }));
 
@@ -221,8 +228,8 @@ boards.push(page({
   barCfg: { page: 'Schreibtisch', active: 0, hgt: 'ASr', unit: '' },
   body:
     '<div class="tile focus"><div class="band bad"></div>' +
-    '<div class="val warn">ASr</div>' +
-    '<div class="sub bad">Referenzfahrt nötig — ▼ halten</div></div>' +
+    '<div class="val bad">ASr</div>' +
+    '<div class="sub warn">Referenzfahrt nötig</div></div>' +
     upDn() + presets(true) + stopBtn()
 }));
 
@@ -238,9 +245,9 @@ boards.push(page({
     '<div class="tile focus"><div class="band"></div>' +
     '<div class="eyebrow">Berlin</div>' +
     '<div class="val">18<i>°C</i></div><div class="sub">Teils bewölkt</div></div>' +
-    statTile(260, 8, 'min', '12°') + statTile(386, 8, 'max', '21°') + statTile(512, 8, 'gefühlt', '17°') +
-    statTile(260, 80, 'Luftfeuchte', '62 %') + statTile(386, 80, 'Wind', '11 km/h') +
-    statTile(512, 80, 'Regen', '20 %')
+    statTile(260, 8, 'min', '12°') + statTile(387, 8, 'max', '21°') + statTile(514, 8, 'gefühlt', '17°') +
+    statTile(260, 80, 'Luftfeuchte', '62 %') + statTile(387, 80, 'Wind', '11 km/h') +
+    statTile(514, 80, 'Regen', '20 %')
 }));
 
 /* 6 — Wetter ohne Netz */
@@ -250,7 +257,7 @@ boards.push(page({
   body:
     '<div class="tile focus"><div class="band warn"></div>' +
     '<div class="eyebrow">Berlin</div>' +
-    '<div class="val dim">--<i>°C</i></div><div class="sub warn">Kein Netz</div></div>' +
+    '<div class="val dim">– – –<i>°C</i></div><div class="sub warn">Kein Netz</div></div>' +
     '<div class="tile" style="left:260px;top:8px;width:372px;height:136px">' +
     '<div style="position:absolute;left:22px;top:38px;font-size:16px;color:var(--tx2)">' +
     'Letzter Abruf 09:12 Uhr</div>' +
@@ -266,8 +273,8 @@ boards.push(page({
   barCfg: { page: 'Einstellungen', active: 6 },
   body:
     '<div class="row" style="top:8px"><div class="lb">Helligkeit</div>' +
-    '<div class="rt"><div class="sl"><div class="tr"></div><div class="fl" style="width:132px"></div>' +
-    '<div class="kn" style="left:123px"></div></div><div class="num">180</div></div></div>' +
+    '<div class="rt"><div class="sl"><div class="tr"></div><div class="fl" style="width:139px"></div>' +
+    '<div class="kn" style="left:130px"></div></div><div class="num">180</div></div></div>' +
     '<div class="row" style="top:60px"><div class="lb">Display-Ruhe nach</div>' +
     '<div class="rt"><div class="pill" style="width:150px;justify-content:space-between">' +
     '<span>2 Minuten</span>' + chev() + '</div></div></div>' +
@@ -286,7 +293,7 @@ boards.push(page({
   body:
     '<div class="tile focus"><div class="band good"></div>' +
     '<div class="eyebrow">Wohnzimmer</div>' +
-    '<div class="mid">Go Your Own Way</div><div class="mid2">Fleetwood Mac</div>' +
+    '<div class="mid">Everywhere</div><div class="mid2">Fleetwood Mac</div>' +
     '<div class="prog" style="top:108px;width:206px"><span style="width:76px"></span></div>' +
     '<div style="position:absolute;left:20px;top:118px;font-size:12px;color:var(--tx3)">1:42</div>' +
     '<div style="position:absolute;right:18px;top:118px;font-size:12px;color:var(--tx3)">4:14</div>' +
@@ -326,14 +333,14 @@ const card = (x, y, name, value, act = false, free = false) =>
 
 boards.push(page({
   file: 'Seitenraster.dc.html', title: 'Seitenraster',
-  barCfg: { page: 'Alle Seiten', active: 0 },
+  barCfg: { page: 'Seitenraster', active: -1 },
   body:
     card(8, 8, 'Schreibtisch', '73,5 cm — bereit', true) +
     card(166, 8, 'Wetter', '18°, teils bewölkt') +
     card(324, 8, 'Kalender', '09:30 Daily Standup') +
     card(482, 8, 'Spotify', 'Go Your Own Way') +
     card(8, 80, 'Einstellungen', 'Helligkeit 180') +
-    card(166, 80, 'Raumklima', '21,4° · 44 % rF') +
+    card(166, 80, 'Raumklima', '21,4° · 44 %') +
     card(324, 80, 'Abfahrten', 'M10 in 4 min') +
     card(482, 80, 'frei', '', false, true)
 }));
@@ -346,8 +353,7 @@ boards.push(page({
   body:
     '<div class="tile focus"><div class="band"></div>' +
     '<div class="val">73,5<i>cm</i></div><div class="sub">bereit</div></div>' +
-    upDn() + presets() +
-    '<div class="stop" style="background:#1A1216">' + stopSq('#8E3B37') + '</div>'
+    upDn() + presets() + stopBtn()
 }));
 
 /* 12 — Statuszeile, aufgerissen */
@@ -363,15 +369,14 @@ boards.push(page({
   barCfg: { page: 'Wetter — Berlin', active: 1 },
   extra: '.dev{height:180px}',
   body:
-    cal(4, 34, 116, 'tippen → Schreibtisch', '#4FA3FF') +
-    cal(126, 34, 226, 'tippen → Seitenraster', '#4FA3FF') +
+    cal(4, 34, 122, 'tippen: Schreibtisch', '#4FA3FF') +
+    cal(130, 34, 228, 'tippen: Seitenraster', '#4FA3FF') +
     cal(448, 34, 188, 'Uhr · Datum · WLAN', '#6B7684') +
     '<div style="position:absolute;left:8px;top:82px;width:624px;height:62px;background:var(--panel);' +
     'border-radius:8px;box-sizing:border-box;padding:12px 16px">' +
     '<div style="font-size:14px;color:var(--tx);font-weight:600">Zwei Tipper zu jeder Seite</div>' +
-    '<div style="font-size:12px;color:var(--tx2);margin-top:5px;line-height:1.5">' +
-    'Die Höhe steht immer in der Statuszeile — der häufigste Blick braucht gar keine Seite. ' +
-    'Links tippen springt zum Schreibtisch, die Mitte öffnet das Seitenraster.</div></div>'
+    '<div style="font-size:12px;color:var(--tx2);margin-top:6px;line-height:1.5">' +
+    'Die Höhe steht immer oben — der häufigste Blick braucht keine Seite.</div></div>'
 }));
 
 /* ------------------------------------------------------------ System --- */
@@ -445,17 +450,19 @@ const sysBody =
   'Deshalb gibt es keinen einzigen Verlauf im System.</div></div>' +
 
   '<div><h2>Schriftskala — Montserrat</h2>' +
-  ty('48 / SemiBold', 'font-size:44px;font-weight:600;letter-spacing:-1px', '73,5') +
-  ty('28 / SemiBold', 'font-size:28px;font-weight:600', 'Überschrift') +
+  ty('48 / SemiBold', 'font-size:48px;font-weight:600;letter-spacing:-1px;line-height:52px', '73,5') +
   ty('24 / SemiBold', 'font-size:24px;font-weight:600', 'Medientitel') +
   ty('20 / SemiBold', 'font-size:20px;font-weight:600', 'Taste') +
   ty('16 / SemiBold', 'font-size:16px;font-weight:600', 'Uhrzeit, Wert') +
   ty('16 / Regular', 'font-size:16px', 'Statustext, Listenzeile') +
   ty('14 / Regular', 'font-size:14px', 'Statuszeile, Seitenname') +
   ty('12 / Regular', 'font-size:12px', 'Einheit, Diagnose, Label') +
-  '<div class="note">Acht Zeichensätze: Regular in 12/14/16, SemiBold in 16/20/24/28/48. ' +
-  'Genau die Größen, die heute schon übersetzt werden — die Skala kostet also nichts ' +
-  'zusätzlich. Umlaute und ° gehören in den Zeichensatz.</div></div>' +
+  '<div class="note">Sieben Zeichensätze: Regular in 12/14/16, SemiBold in 16/20/24/48. ' +
+  'Keine Stufe, die nicht auf mindestens einem Artboard vorkommt.<br><br>' +
+  'Über ASCII hinaus muss der Zeichensatz tragen: die Umlaute und ß, das Gradzeichen °, ' +
+  'den Geviertstrich — für Seitennamen, den Halbgeviertstrich – für den Platzhalter ' +
+  '„– – –“, das Minuszeichen − der Stepper und den Mittelpunkt · als Trenner. ' +
+  'Acht Zeichen, die man beim Erzeugen leicht vergisst.</div></div>' +
 
   '<div><h2>Raster und Seitenrezept</h2>' +
   '<div class="grid-demo">' +
@@ -475,8 +482,10 @@ const sysBody =
   'Mindestfläche 96 × 64 für alles, was ein Finger trifft.</li>' +
   '<li><b>Das Statusband</b> links an der Fokuskachel trägt den Zustand als Farbe — ' +
   'peripher erkennbar, ohne zu lesen.</li>' +
-  '<li><b>Eine Akzentfarbe gleichzeitig.</b> Blau heißt „bewegt sich oder ist gedrückt". ' +
-  'Nichts anderes ist blau.</li>' +
+  '<li><b>Blau ist reserviert.</b> Es heißt: bewegt sich, ist gedrückt, oder ist die ' +
+  'Seite, auf der du gerade stehst. Sonst nichts — Zahlen und Zeiten bleiben weiß.</li>' +
+  '<li><b>Der Randstreifen</b> trägt die eine sofort wirksame Aktion der Seite. Rot nur, ' +
+  'wenn sie etwas anhält.</li>' +
   '</ol></div>' +
   '</div></div>' +
 
@@ -531,11 +540,11 @@ const sysBody =
   icon(chev('#9AA6B4'), 'chevron') +
   '</div>' +
   '<div class="note">Pfeil hoch, Pfeil runter, das Stopp-Quadrat und die Seitenpunkte sind ' +
-  'reine Geometrie — die zeichnet LVGL selbst, sie brauchen keinen Zeichensatz. „Zurück" ' +
-  'ist „weiter" gespiegelt. Damit bleiben sechs echte Glyphen.</div></div>';
+  'reine Geometrie — die zeichnet LVGL selbst, sie brauchen keinen Zeichensatz. „Zurück“ ' +
+  'ist „weiter“ gespiegelt. Damit bleiben sechs echte Glyphen.</div></div>';
 
 writeFileSync('design/System.dc.html',
-  '<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n' +
+  '<!doctype html>\n<html lang="de">\n<head>\n<meta charset="utf-8">\n' +
   '<script src="./support.js"><\/script>\n</head>\n<body>\n<x-dc>\n<helmet>\n' + FONT +
   '\n<style>' + CSS + SYSCSS + '</style>\n</helmet>\n<div class="sys">' + sysBody +
   '</div>\n</x-dc>\n</body>\n</html>\n');

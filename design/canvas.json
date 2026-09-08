@@ -1,62 +1,108 @@
 {
+  "pages": [
+    { "id": "page-1", "name": "Richtung A — ausgearbeitet" },
+    { "id": "page-2", "name": "Vier Alternativen" }
+  ],
   "artboards": [
-    { "file": "System.dc.html", "title": "Designsystem", "x": 0, "y": 0, "w": 1480, "h": 1360 },
+    { "file": "System.dc.html", "title": "A · Designsystem", "page": "page-1", "x": 0, "y": 0, "w": 1480, "h": 1360 },
 
-    { "file": "Statuszeile.dc.html", "title": "Statuszeile", "x": 0, "y": 1560, "w": 640, "h": 180 },
-    { "file": "Seitenraster.dc.html", "title": "Seitenraster", "x": 780, "y": 1560, "w": 640, "h": 180 },
-    { "file": "Main.dc.html", "title": "Schreibtisch — bereit", "x": 1560, "y": 1560, "w": 640, "h": 180 },
+    { "file": "Statuszeile.dc.html", "title": "A · Statuszeile", "page": "page-1", "x": 0, "y": 1660, "w": 640, "h": 180 },
+    { "file": "Seitenraster.dc.html", "title": "A · Seitenraster", "page": "page-1", "x": 780, "y": 1660, "w": 640, "h": 180 },
+    { "file": "Main.dc.html", "title": "Richtung A — Schreibtisch bereit", "page": "page-1", "x": 1560, "y": 1660, "w": 640, "h": 180 },
 
-    { "file": "SchreibtischFahrt.dc.html", "title": "Schreibtisch — Fahrt", "x": 0, "y": 1980, "w": 640, "h": 180 },
-    { "file": "SchreibtischOhneRueckmeldung.dc.html", "title": "Schreibtisch — keine Rückmeldung", "x": 780, "y": 1980, "w": 640, "h": 180 },
-    { "file": "SchreibtischFehlercode.dc.html", "title": "Schreibtisch — Fehlercode", "x": 1560, "y": 1980, "w": 640, "h": 180 },
+    { "file": "SchreibtischFahrt.dc.html", "title": "A · Fahrt", "page": "page-1", "x": 0, "y": 2160, "w": 640, "h": 180 },
+    { "file": "SchreibtischOhneRueckmeldung.dc.html", "title": "A · keine Rückmeldung", "page": "page-1", "x": 780, "y": 2160, "w": 640, "h": 180 },
+    { "file": "SchreibtischFehlercode.dc.html", "title": "A · Fehlercode", "page": "page-1", "x": 1560, "y": 2160, "w": 640, "h": 180 },
 
-    { "file": "Wetter.dc.html", "title": "Wetter", "x": 0, "y": 2400, "w": 640, "h": 180 },
-    { "file": "WetterOhneNetz.dc.html", "title": "Wetter — kein Netz", "x": 780, "y": 2400, "w": 640, "h": 180 },
-    { "file": "Einstellungen.dc.html", "title": "Einstellungen", "x": 1560, "y": 2400, "w": 640, "h": 180 },
+    { "file": "Wetter.dc.html", "title": "A · Wetter", "page": "page-1", "x": 0, "y": 2660, "w": 640, "h": 180 },
+    { "file": "WetterOhneNetz.dc.html", "title": "A · Wetter, kein Netz", "page": "page-1", "x": 780, "y": 2660, "w": 640, "h": 180 },
+    { "file": "Einstellungen.dc.html", "title": "A · Einstellungen", "page": "page-1", "x": 1560, "y": 2660, "w": 640, "h": 180 },
 
-    { "file": "Spotify.dc.html", "title": "Spotify", "x": 0, "y": 2820, "w": 640, "h": 180 },
-    { "file": "Kalender.dc.html", "title": "Kalender", "x": 780, "y": 2820, "w": 640, "h": 180 },
-    { "file": "Nacht.dc.html", "title": "Nachtvariante", "x": 1560, "y": 2820, "w": 640, "h": 180 }
+    { "file": "Spotify.dc.html", "title": "A · Spotify", "page": "page-1", "x": 0, "y": 3160, "w": 640, "h": 180 },
+    { "file": "Kalender.dc.html", "title": "A · Kalender", "page": "page-1", "x": 780, "y": 3160, "w": 640, "h": 180 },
+    { "file": "Nacht.dc.html", "title": "A · Nachtvariante", "page": "page-1", "x": 1560, "y": 3160, "w": 640, "h": 180 },
+
+    { "file": "RichtungB.dc.html", "title": "Richtung B — Messinstrument", "page": "page-2", "x": 0, "y": 300, "w": 640, "h": 180 },
+    { "file": "RichtungBSpotify.dc.html", "title": "B · Spotify", "page": "page-2", "x": 780, "y": 300, "w": 640, "h": 180 },
+
+    { "file": "RichtungC.dc.html", "title": "Richtung C — Typografisch", "page": "page-2", "x": 0, "y": 860, "w": 640, "h": 180 },
+    { "file": "RichtungCWetter.dc.html", "title": "C · Wetter", "page": "page-2", "x": 780, "y": 860, "w": 640, "h": 180 },
+
+    { "file": "RichtungD.dc.html", "title": "Richtung D — Zustandsfeld", "page": "page-2", "x": 0, "y": 1420, "w": 640, "h": 180 },
+    { "file": "RichtungDFahrt.dc.html", "title": "D · während der Fahrt", "page": "page-2", "x": 780, "y": 1420, "w": 640, "h": 180 },
+
+    { "file": "RichtungE.dc.html", "title": "Richtung E — Papier", "page": "page-2", "x": 0, "y": 1980, "w": 640, "h": 180 },
+    { "file": "RichtungEKalender.dc.html", "title": "E · Kalender", "page": "page-2", "x": 780, "y": 1980, "w": 640, "h": 180 }
   ],
   "annotations": [
-    { "id": "n-system", "x": 0, "y": -210, "w": 900,
+    { "id": "n-a-titel", "page": "page-1", "x": 0, "y": -460, "w": 900,
+      "text": "RICHTUNG A — Kachel\n\nDie ausgearbeitete Richtung: dunkles Raster aus Kacheln, blauer Akzent, Höhe dauerhaft in der Statuszeile, Seitenraster als Launcher.\n\nFarbtoken und Schriftstufen entsprechen dem, was heute schon in src/ui/theme.cpp steht — die Richtung wäre ohne Umbau am Font-Vorrat umsetzbar. Die vier Alternativen liegen auf der zweiten Seite." },
+
+    { "id": "n-system", "page": "page-1", "x": 0, "y": -230, "w": 900,
       "text": "Designsystem\n\nFarbtoken und Schriftstufen sind die, die heute schon in src/ui/theme.cpp und im Flash liegen — nachgeschärft, nicht ersetzt. Die Skala kostet also keinen zusätzlichen Speicher.\n\nEntschieden gegen ein fluides Spaltenraster: auf 624 nutzbaren Pixeln ergeben 12 Spalten krumme 44,67 px. Stattdessen feste Modulbreiten auf einem 8-px-Raster — das lässt sich in LVGL ohne Rechnerei hinschreiben." },
 
-    { "id": "n-bar", "x": 0, "y": 1390, "w": 640,
-      "text": "Statuszeile — die Antwort auf die Navigationsfrage\n\nDie Höhe steht immer oben links. Der häufigste Blick („wie hoch steht er?\") braucht damit gar keine Seite, egal wo man ist.\n\nLinks tippen springt zum Schreibtisch, die Mitte öffnet das Seitenraster. Von überall nach überall in höchstens zwei Tippern, auch bei zwölf Seiten.\n\nVerworfen: eine feste Reiterleiste unten. Auf 180 px Höhe frisst sie 22 % der Fläche, und ab sechs Seiten werden die Reiter unlesbar." },
+    { "id": "n-bar", "page": "page-1", "x": 0, "y": 1400, "w": 640,
+      "text": "Statuszeile — die Antwort auf die Navigationsfrage\n\nDie Höhe steht immer oben links. Der häufigste Blick („wie hoch steht er?“) braucht damit gar keine Seite, egal wo man ist.\n\nLinks tippen springt zum Schreibtisch, die Mitte öffnet das Seitenraster. Von überall nach überall in höchstens zwei Tippern, auch bei zwölf Seiten.\n\nVerworfen: eine feste Reiterleiste unten. Auf 180 px Höhe frisst sie 22 % der Fläche, und ab sechs Seiten werden die Reiter unlesbar." },
 
-    { "id": "n-raster", "x": 780, "y": 1390, "w": 640,
-      "text": "Seitenraster\n\nDer Launcher ist zugleich Übersicht: jede Kachel trägt ihren aktuellen Wert. Ein Blick genügt für „Tisch bereit, 18 Grad, Standup um halb zehn\".\n\nAcht Plätze, sieben belegt — die leere Kachel zeigt, dass Wachsen vorgesehen ist und nicht improvisiert." },
+    { "id": "n-raster", "page": "page-1", "x": 780, "y": 1400, "w": 640,
+      "text": "Seitenraster\n\nDer Launcher ist zugleich Übersicht: jede Kachel trägt ihren aktuellen Wert. Ein Blick genügt für „Tisch bereit, 18 Grad, Standup um halb zehn“.\n\nAcht Plätze, sieben belegt — die leere Kachel zeigt, dass Wachsen vorgesehen ist und nicht improvisiert." },
 
-    { "id": "n-main", "x": 1560, "y": 1390, "w": 640,
+    { "id": "n-main", "page": "page-1", "x": 1560, "y": 1400, "w": 640,
       "text": "Schreibtisch — bereit\n\nDas Grundlayout jeder Seite: links die Fokuskachel mit dem einen Wert, rechts die Aktionen in Modulen von 96 × 64 aufwärts.\n\nHoch und Runter sitzen direkt neben der Zahl, damit Ablesen und Drücken eine Bewegung sind. Der Not-Stopp klebt als schmale, volle Höhe am rechten Rand — blind zu treffen, nie versehentlich." },
 
-    { "id": "n-fahrt", "x": 0, "y": 1810, "w": 640,
-      "text": "Schreibtisch — Fahrt mit Ziel\n\nDas Statusband links wird blau, ein 4-px-Balken zeigt den Weg zum Ziel. Beides sind kleine Flächen — genau das, was sich bei streifenweisem Neuzeichnen flüssig animieren lässt.\n\nDie Richtungstaste bekommt nur einen Rahmen, keine Füllung: gefüllt heißt „mein Finger liegt drauf\". Der Stopp färbt sich rot, weil er jetzt die wichtigste Fläche ist." },
+    { "id": "n-fahrt", "page": "page-1", "x": 0, "y": 1900, "w": 640,
+      "text": "Schreibtisch — Fahrt mit Ziel\n\nDas Statusband links wird blau, ein 4-px-Balken zeigt den Weg zum Ziel. Beides sind kleine Flächen — genau das, was sich bei streifenweisem Neuzeichnen flüssig animieren lässt.\n\nDie Richtungstaste bekommt nur einen Rahmen, keine Füllung: gefüllt heißt „mein Finger liegt drauf“. Der Stopp färbt sich rot, weil er jetzt die wichtigste Fläche ist." },
 
-    { "id": "n-ohne", "x": 780, "y": 1810, "w": 640,
+    { "id": "n-ohne", "page": "page-1", "x": 780, "y": 1900, "w": 640,
       "text": "Schreibtisch — keine Rückmeldung\n\nDrei Striche statt einer erfundenen Zahl, Statusband orange. Die beiden Zielhöhen-Plätze sind sichtbar ausgegraut, weil geregeltes Fahren ohne Rückmeldung nicht geht — die Box-Plätze bleiben aktiv.\n\nAuch in der Statuszeile stehen Striche. Ein Zustand, eine Aussage, überall dieselbe." },
 
-    { "id": "n-fehler", "x": 1560, "y": 1810, "w": 640,
+    { "id": "n-fehler", "page": "page-1", "x": 1560, "y": 1900, "w": 640,
       "text": "Schreibtisch — Fehlercode\n\nDie Steuerbox schickt dreistellige Codes wie ASr statt einer Höhe. Der Code steht in derselben 48er Stelle wie die Zahl — kein Sonderlayout — und darunter im Klartext, was zu tun ist.\n\nDie Fokuskachel nimmt also Zahl, Code oder Platzhalter auf, ohne ihre Form zu ändern." },
 
-    { "id": "n-wetter", "x": 0, "y": 2230, "w": 640,
+    { "id": "n-wetter", "page": "page-1", "x": 0, "y": 2400, "w": 640,
       "text": "Wetter\n\nDerselbe Bauplan, anderer Inhalt: Temperatur in der Fokuskachel, rechts sechs Kennwert-Kacheln in zwei Reihen à 64 px — dieselbe Modulhöhe wie die Tasten der Schreibtischseite.\n\nDer Ortsname steht als Zusatz im Seitennamen der Statuszeile statt in der Kachel." },
 
-    { "id": "n-wetter-off", "x": 780, "y": 2230, "w": 640,
+    { "id": "n-wetter-off", "page": "page-1", "x": 780, "y": 2400, "w": 640,
       "text": "Wetter — kein Netz\n\nKeine leere Seite und kein Fehlerdialog: der letzte bekannte Stand mit Zeitstempel, dazu wann der nächste Versuch läuft. Statusband orange, WLAN-Zeichen durchgestrichen.\n\nDas Muster gilt für jeden künftigen Dienst — Kalender und Abfahrten sehen offline genauso aus." },
 
-    { "id": "n-settings", "x": 1560, "y": 2230, "w": 640,
+    { "id": "n-settings", "page": "page-1", "x": 1560, "y": 2400, "w": 640,
       "text": "Einstellungen\n\nDie einzige Seite ohne Fokuskachel: hier gibt es keinen dominierenden Wert, sondern eine Liste. Zeilen sind 44 px hoch, Bedienelemente rechtsbündig auf einer Kante.\n\nDie dritte Zeile ist bewusst angeschnitten und rechts steht ein Scrollbalken — sonst sieht die Seite aus, als wäre sie zu Ende." },
 
-    { "id": "n-spotify", "x": 0, "y": 2650, "w": 640,
+    { "id": "n-spotify", "page": "page-1", "x": 0, "y": 2900, "w": 640,
       "text": "Spotify — der Beweis\n\nExakt dieselbe Geometrie wie die Schreibtischseite: 244er Fokuskachel, 96er Spalte, 2 × 2 Raster, 36er Randstreifen. Nur der Inhalt ist anders — Titel und Interpret statt Wert und Einheit.\n\nDas ist die Probe aufs Exempel: eine neue Seite ist ein Ausfüllen, kein Neuentwurf. Lange Titel werden mit Auslassung abgeschnitten.\n\nErwogen: Lautstärke als Regler statt zwei Tasten. Verworfen, weil ein Regler die Rastergleichheit bricht — und blind trifft man Tasten besser." },
 
-    { "id": "n-kalender", "x": 780, "y": 2650, "w": 640,
+    { "id": "n-kalender", "page": "page-1", "x": 780, "y": 2900, "w": 640,
       "text": "Kalender — der zweite Beweis\n\nHier zeigt die rechte Zone, dass sie auch Listenzeilen trägt und nicht nur Tasten. Der nächste Termin steht groß links, die folgenden drei rechts.\n\nDamit sind alle drei Füllungen der Aktionszone durchgespielt: Tasten, Kennwert-Kacheln, Listenzeilen." },
 
-    { "id": "n-nacht", "x": 1560, "y": 2650, "w": 640,
-      "text": "Nachtvariante\n\nBei niedriger Helligkeit verschwinden dünne Graustufen zuerst. Also weniger Ebenen statt gleichmäßig dunkler: Kacheln sinken fast in den Grund, der Wert behält seinen Kontrast, der Akzent wird gedämpft.\n\nEs ist derselbe Aufbau mit anderen Token — ein Satz Farben, kein zweites Layout." }
+    { "id": "n-nacht", "page": "page-1", "x": 1560, "y": 2900, "w": 640,
+      "text": "Nachtvariante\n\nBei niedriger Helligkeit verschwinden dünne Graustufen zuerst. Also weniger Ebenen statt gleichmäßig dunkler: Kacheln sinken fast in den Grund, der Wert behält seinen Kontrast, der Akzent wird gedämpft.\n\nEs ist derselbe Aufbau mit anderen Token — ein Satz Farben, kein zweites Layout." },
+
+    { "id": "n-alt-titel", "page": "page-2", "x": 0, "y": -200, "w": 1420,
+      "text": "VIER ALTERNATIVEN ZU RICHTUNG A\n\nJede Richtung greift eine andere Frage an: B nutzt die Breite als Information, C streicht jede Fläche, D macht die Farbe zur Nachricht, E dreht Helligkeit und Navigation um. Es sind bewusst keine vier Farbvarianten desselben Entwurfs.\n\nLinks steht jeweils der Schreibtisch im Ruhezustand — damit sich alle fünf direkt vergleichen lassen. Rechts eine zweite Seite, die zeigt, ob die Richtung trägt.\n\nJede Notiz nennt auch die Schwäche. Keine dieser vier ist ohne Preis." },
+
+    { "id": "n-b", "page": "page-2", "x": 0, "y": 10, "w": 640,
+      "text": "RICHTUNG B — Messinstrument\n\nDie Breite ist eine Skala. Statt einer Zahl in einer Kachel steht die Höhe auf einem Lineal von 60 bis 125 cm, mit den gespeicherten Höhen als beschrifteten Kerben. Man sieht, wo der Tisch steht und wohin er fährt — nicht nur eine Zahl, sondern eine Lage.\n\nDie Regel für neue Seiten: jede bekommt ein Band über die volle Breite. Bei Spotify ist es der Fortschritt, beim Kalender wäre es der Tagesverlauf.\n\nPreis: eine zweite Schriftfamilie (Barlow Condensed für die Ziffern) und ein Lineal, das bei jeder Bewegung nachgeführt wird — allerdings nur der Marker, nicht die Skala.\n\nSchwäche: Die Einstellungsseite hat kein natürliches Band. Dort bleibt die Regel leer, und genau daran erkennt man später, ob ein System trägt oder nur gut aussieht." },
+
+    { "id": "n-b2", "page": "page-2", "x": 780, "y": 10, "w": 640,
+      "text": "B · Spotify\n\nDer Beweis für die Bandregel: derselbe Aufbau, das Lineal wird zum Fortschrittsbalken. Titel oben links, Band in der Mitte, Bedienzeile unten.\n\nDie Seite ist ausgefüllt, nicht neu entworfen — und die Bedienzeile hat hier fünf statt sieben Feldern, was das Raster ohne Bruch mitmacht." },
+
+    { "id": "n-c", "page": "page-2", "x": 0, "y": 570, "w": 640,
+      "text": "RICHTUNG C — Typografisch\n\nKeine Kacheln, keine Flächen. Nur Schrift, Haarlinien und Leere. Die rechten beiden Felder sind je 131 × 159 px groß — größer trifft man auf diesem Gerät nirgends, auch blind nicht.\n\nMonochrom: Farbe ist ausschließlich für Warnung und Stopp reserviert. Was bedienbar ist, erkennt man an der Helligkeit, nicht am Farbton. Von allen fünf Richtungen die mit Abstand billigste zu zeichnen — es gibt fast keine gefüllten Flächen.\n\nSchwäche: Tastflächen ohne Rahmen muss man lernen. Wer das Gerät zum ersten Mal sieht, weiß nicht, dass rechts zwei Tasten sind. Und wo der Not-Stopp sitzt, ist offen — mein Vorschlag wäre, dass die rechte Hälfte während der Fahrt zu einem einzigen STOPP wird." },
+
+    { "id": "n-c2", "page": "page-2", "x": 780, "y": 570, "w": 640,
+      "text": "C · Wetter\n\nOhne Tasten trägt die rechte Spalte zwei Kennwerte statt zweier Tastflächen. Die Struktur bleibt stehen, nur die Füllung wechselt.\n\nDie Detailwerte laufen als eine Zeile Text am unteren Rand — auf einem so breiten Streifen liest sich das besser als sechs kleine Kacheln." },
+
+    { "id": "n-d", "page": "page-2", "x": 0, "y": 1130, "w": 640,
+      "text": "RICHTUNG D — Zustandsfeld\n\nDie Farbe der ganzen Fläche ist die Information. Ruhe fast schwarz, Fahrt ein blaues Feld, Blockade bernstein. Das erkennt man aus dem Augenwinkel, ohne hinzusehen — und darum geht es bei einem Gerät, das acht Stunden im Blickfeld hängt.\n\nDie beiden Hälften sind die Tasten: links runter, rechts hoch, je 320 × 134 px. Blind bedienbar, ohne irgendetwas zu lernen.\n\nSchwäche, und zwar die ernsteste der vier: ein Farbwechsel über die volle Fläche ist genau das, was dieses Display schlecht kann. Einmal rund 60 ms — bei seltenen Zustandswechseln vertretbar, aber nichts, was man animieren darf. Und ein blaues Vollbild acht Stunden am Tag könnte auf Dauer anstrengen." },
+
+    { "id": "n-d2", "page": "page-2", "x": 780, "y": 1130, "w": 640,
+      "text": "D · während der Fahrt\n\nDer Kern der Richtung: das Feld färbt sich, die Zahl bleibt an ihrem Platz, und die Stoppfläche ist der ganze Schirm — irgendwo tippen genügt.\n\nDas ist die beste Antwort auf „Not-Stopp ohne Hinsehen“, die mir eingefallen ist. Sie kostet aber die Speicherplätze am unteren Rand, die während der Fahrt verschwinden." },
+
+    { "id": "n-e", "page": "page-2", "x": 0, "y": 1690, "w": 640,
+      "text": "RICHTUNG E — Papier\n\nHelles Thema, und das ist kein Geschmack, sondern ein Argument: das Panel ist IPS, Schwarz bleibt dunkles Grau. Ein heller Grund nutzt die Hintergrundbeleuchtung, statt gegen sie zu arbeiten, und ist bei Sonne im Raum besser lesbar als jede dunkle Variante.\n\nDie Navigation ist hier ohne Launcher gelöst: die Nachbarseiten schauen links und rechts als Kartenkanten herein und zeigen ihren Wert. Man sieht immer, was daneben liegt, und tippt die Kante an, um hinzuspringen.\n\nSchwäche: die Kanten kosten 132 px, ein gutes Fünftel der Breite, auf jeder Seite. Und nachts blendet ein heller Schirm — hier ist eine dunkle Nachtvariante nicht Kür, sondern Pflicht, sonst ist das Gerät am Abend unbenutzbar." },
+
+    { "id": "n-e2", "page": "page-2", "x": 780, "y": 1690, "w": 640,
+      "text": "E · Kalender\n\nDieselbe Karte, Listenzeilen statt Tasten. Die Kanten zeigen jetzt Tisch und Wetter — die Höhe ist ablesbar, ohne die Seite zu verlassen.\n\nDas ist der eigentliche Reiz der Richtung: der Kontext geht nie verloren, weil er physisch am Rand liegen bleibt." }
   ],
-  "launch": { "view": "canvas" }
+  "launch": { "view": "canvas", "page": "page-2" }
 }
