@@ -13,6 +13,7 @@ namespace services {
 namespace {
 
 constexpr uint32_t kRetryMs = 60000;
+constexpr uint16_t kHttpTimeoutMs = 8000;
 WeatherService g_weather;
 
 } // namespace
@@ -67,30 +68,37 @@ bool WeatherService::fetch() {
              "&timezone=auto&forecast_days=1",
              static_cast<double>(cfg.latitude), static_cast<double>(cfg.longitude));
 
+    log_i("Wetter-Abruf gestartet");
+
     WiFiClientSecure client;
     client.setInsecure(); // oeffentliche, unkritische Daten
-    client.setTimeout(8000);
+    client.setHandshakeTimeout((kHttpTimeoutMs + 999) / 1000);
+    client.setTimeout((kHttpTimeoutMs + 999) / 1000);
 
     HTTPClient http;
-    http.setConnectTimeout(8000);
+    http.setConnectTimeout(kHttpTimeoutMs);
+    http.setTimeout(kHttpTimeoutMs);
     if (!http.begin(client, url)) {
+        log_w("Wetter-Abruf konnte nicht initialisiert werden");
         return false;
     }
     const int status = http.GET();
     if (status != HTTP_CODE_OK) {
-        log_w("Wetter-Abruf fehlgeschlagen: HTTP %d", status);
+        log_w("Wetter-Abruf fehlgeschlagen: HTTP %d (%s)", status,
+              HTTPClient::errorToString(status).c_str());
         http.end();
         return false;
     }
 
-    JsonDocument filter;
-    filter["current"] = true;
-    filter["daily"] = true;
+    const String payload = http.getString();
+    http.end();
+    if (payload.length() == 0) {
+        log_w("Wetter-Antwort ist leer");
+        return false;
+    }
 
     JsonDocument doc;
-    const DeserializationError err =
-        deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
-    http.end();
+    const DeserializationError err = deserializeJson(doc, payload);
     if (err) {
         log_w("Wetter-JSON fehlerhaft: %s", err.c_str());
         return false;
@@ -98,6 +106,8 @@ bool WeatherService::fetch() {
 
     JsonObject current = doc["current"];
     if (current.isNull()) {
+        const char *reason = doc["reason"] | "Feld current fehlt";
+        log_w("Wetterdaten unvollstaendig: %s", reason);
         return false;
     }
     JsonObject daily = doc["daily"];
