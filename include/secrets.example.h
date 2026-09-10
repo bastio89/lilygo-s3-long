@@ -16,3 +16,8 @@
 // #define BAMBU_PRINTER_IP "192.168.1.123"
 // #define BAMBU_PRINTER_SERIAL "01P00A000000000"
 // #define BAMBU_ACCESS_CODE "12345678"
+
+// Optional: Govee H5074 im AMS. Die MAC-Adresse wird beim ersten Fund auch
+// auf der seriellen Konsole ausgegeben. Leer lassen, um den ersten H5074 zu
+// verwenden.
+// #define GOVEE_H5074_ADDRESS "AA:BB:CC:DD:EE:FF"

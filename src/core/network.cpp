@@ -31,7 +31,7 @@ void networkBegin() {
     }
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(true);
-    WiFi.setSleep(false);
+    WiFi.setSleep(true);
     startConnect(millis());
 }
 

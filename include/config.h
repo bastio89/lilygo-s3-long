@@ -76,6 +76,23 @@
 #define BAMBU_ACCESS_CODE ""
 #endif
 
+// --- Govee H5074 im AMS ----------------------------------------------------
+// Der Sensor sendet Temperatur, Luftfeuchte und Akkustand per BLE. Bei leerer
+// Adresse wird der erste erkannte H5074 verwendet; mit der MAC-Adresse laesst
+// sich der Sensor bei mehreren Govee-Geraeten eindeutig festlegen.
+#ifndef GOVEE_H5074_ADDRESS
+#define GOVEE_H5074_ADDRESS ""
+#endif
+#ifndef GOVEE_SCAN_DURATION_SECONDS
+#define GOVEE_SCAN_DURATION_SECONDS 30
+#endif
+#ifndef GOVEE_SCAN_PERIOD_MS
+#define GOVEE_SCAN_PERIOD_MS (60UL * 1000UL)
+#endif
+#ifndef GOVEE_SENSOR_STALE_AFTER_MS
+#define GOVEE_SENSOR_STALE_AFTER_MS (5UL * 60UL * 1000UL)
+#endif
+
 // --- Schreibtisch -----------------------------------------------------------
 // Fahrbereich der Tischplatte in cm. Vor dem ersten geregelten Fahren mit den
 // Werten der eigenen Anlage abgleichen; zur Laufzeit auf der

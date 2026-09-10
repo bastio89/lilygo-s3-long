@@ -19,6 +19,7 @@
 #include "desk/serial_io.h"
 #include "services/bambu.h"
 #include "services/commute.h"
+#include "services/govee.h"
 #include "services/service.h"
 #include "services/weather.h"
 #include "ui/dashboard.h"
@@ -161,13 +162,14 @@ void setup() {
 
     ui::dashboard::begin(flexispot);
 
-    core::networkBegin();
-    core::clockBegin();
-
     services::registerService(services::weather());
     services::registerService(services::commute());
     services::registerService(services::bambu());
+    services::registerService(services::govee());
     services::beginAll();
+
+    core::networkBegin();
+    core::clockBegin();
 
     Serial.printf("Schreibtisch-UART: RX=%d TX=%d WAKE=%d @ %d Baud\n", DESK_UART_RX_PIN,
                   DESK_UART_TX_PIN, DESK_WAKE_PIN, DESK_UART_BAUD);

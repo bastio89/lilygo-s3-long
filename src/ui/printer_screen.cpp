@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "services/bambu.h"
+#include "services/govee.h"
 #include "ui/dashboard.h"
 #include "ui/theme.h"
 
@@ -19,6 +20,9 @@ lv_obj_t *g_job = nullptr;
 lv_obj_t *g_layer = nullptr;
 lv_obj_t *g_nozzle = nullptr;
 lv_obj_t *g_bed = nullptr;
+lv_obj_t *g_amsTemperature = nullptr;
+lv_obj_t *g_amsHumidity = nullptr;
+lv_obj_t *g_amsBattery = nullptr;
 lv_obj_t *g_status = nullptr;
 lv_obj_t *g_updated = nullptr;
 
@@ -28,7 +32,8 @@ void setLabelTextIfChanged(lv_obj_t *label, const char *text) {
     }
 }
 
-const char *stateText(const char *state) {
+const char *stateText(const services::BambuData &data) {
+    const char *state = data.state;
     if (strcmp(state, "IDLE") == 0) {
         return "Bereit";
     }
@@ -50,12 +55,19 @@ const char *stateText(const char *state) {
     if (strcmp(state, "SLICING") == 0) {
         return "Slicen";
     }
-    return state[0] == '\0' ? "Unbekannt" : state;
+
+    // Wenn der Zustand unbekannt oder leer ist, aber aktive Druckdaten vorliegen
+    if (data.remainingMinutes > 0 || data.percent > 0 || data.currentLayer > 0) {
+        return "Druckt";
+    }
+
+    return (state[0] == '\0' || strcmp(state, "UNKNOWN") == 0) ? "Bereit" : state;
 }
 
 void refreshCb(lv_event_t *) {
     services::bambu().refresh();
-    dashboard::toast("Druckerstatus wird aktualisiert");
+    services::govee().refresh();
+    dashboard::toast("Drucker- und AMS-Status werden aktualisiert");
 }
 
 lv_obj_t *makeCard(lv_obj_t *parent, lv_coord_t x, lv_coord_t width) {
@@ -106,22 +118,37 @@ void create(lv_obj_t *parent) {
     lv_label_set_long_mode(g_updated, LV_LABEL_LONG_CLIP);
 
     lv_obj_t *details = makeCard(parent, 456, kScreenWidth - 462);
-    lv_obj_t *detailsTitle = theme::label(details, &lv_font_montserrat_14, theme::muted(), "Temperatur");
+    lv_obj_t *detailsTitle =
+        theme::label(details, &lv_font_montserrat_14, theme::muted(), "P1S / AMS");
     lv_obj_set_pos(detailsTitle, 10, 8);
-    g_nozzle = theme::label(details, &lv_font_montserrat_16, theme::text(), "Düse -- C");
-    lv_obj_set_pos(g_nozzle, 10, 34);
-    lv_obj_set_size(g_nozzle, 154, 22);
+    lv_obj_set_size(detailsTitle, 112, 18);
+    lv_label_set_long_mode(detailsTitle, LV_LABEL_LONG_CLIP);
+    g_nozzle = theme::label(details, &lv_font_montserrat_14, theme::text(), "Düse -- C");
+    lv_obj_set_pos(g_nozzle, 10, 26);
+    lv_obj_set_size(g_nozzle, 126, 18);
     lv_label_set_long_mode(g_nozzle, LV_LABEL_LONG_CLIP);
-    g_bed = theme::label(details, &lv_font_montserrat_16, theme::text(), "Bett -- C");
-    lv_obj_set_pos(g_bed, 10, 60);
-    lv_obj_set_size(g_bed, 154, 22);
+    g_bed = theme::label(details, &lv_font_montserrat_14, theme::text(), "Bett -- C");
+    lv_obj_set_pos(g_bed, 10, 45);
+    lv_obj_set_size(g_bed, 126, 18);
     lv_label_set_long_mode(g_bed, LV_LABEL_LONG_CLIP);
-    g_status = theme::label(details, &lv_font_montserrat_14, theme::muted(), "nicht konfiguriert");
-    lv_obj_set_pos(g_status, 10, 104);
-    lv_obj_set_size(g_status, 100, 20);
+    g_amsTemperature = theme::label(details, &lv_font_montserrat_14, theme::muted(), "AMS -- C");
+    lv_obj_set_pos(g_amsTemperature, 10, 64);
+    lv_obj_set_size(g_amsTemperature, 140, 18);
+    lv_label_set_long_mode(g_amsTemperature, LV_LABEL_LONG_CLIP);
+    g_amsHumidity = theme::label(details, &lv_font_montserrat_14, theme::muted(), "Feuchte -- %");
+    lv_obj_set_pos(g_amsHumidity, 10, 83);
+    lv_obj_set_size(g_amsHumidity, 140, 18);
+    lv_label_set_long_mode(g_amsHumidity, LV_LABEL_LONG_CLIP);
+    g_amsBattery = theme::label(details, &lv_font_montserrat_12, theme::muted(), "Akku -- %");
+    lv_obj_set_pos(g_amsBattery, 10, 104);
+    lv_obj_set_size(g_amsBattery, 76, 16);
+    lv_label_set_long_mode(g_amsBattery, LV_LABEL_LONG_CLIP);
+    g_status = theme::label(details, &lv_font_montserrat_12, theme::muted(), "P1S --");
+    lv_obj_set_pos(g_status, 90, 104);
+    lv_obj_set_size(g_status, 78, 16);
     lv_label_set_long_mode(g_status, LV_LABEL_LONG_CLIP);
 
-    lv_obj_t *refresh = theme::button(details, LV_SYMBOL_REFRESH, &lv_font_montserrat_20, 118, 96, 34, 34);
+    lv_obj_t *refresh = theme::button(details, LV_SYMBOL_REFRESH, &lv_font_montserrat_20, 136, 4, 34, 34);
     lv_obj_add_event_cb(refresh, refreshCb, LV_EVENT_CLICKED, nullptr);
 }
 
@@ -133,6 +160,33 @@ void tick(uint32_t nowMs) {
                                            ? theme::good()
                                            : theme::muted(),
                                 0);
+
+    const services::GoveeData govee = services::govee().snapshot();
+    const bool goveeReady = services::govee().ready();
+    const lv_color_t goveeColor = goveeReady ? theme::good() : theme::muted();
+    lv_obj_set_style_text_color(g_amsTemperature, goveeColor, 0);
+    lv_obj_set_style_text_color(g_amsHumidity, goveeColor, 0);
+    lv_obj_set_style_text_color(g_amsBattery, goveeColor, 0);
+    if (!govee.valid) {
+        setLabelTextIfChanged(g_amsTemperature, "AMS -- C");
+        setLabelTextIfChanged(g_amsHumidity, "Feuchte -- %");
+        setLabelTextIfChanged(g_amsBattery, "Akku -- %");
+    } else {
+        char amsTemperature[24];
+        snprintf(amsTemperature, sizeof(amsTemperature), "AMS %.1f C",
+                 static_cast<double>(govee.temperatureC));
+        setLabelTextIfChanged(g_amsTemperature, amsTemperature);
+
+        char amsHumidity[28];
+        snprintf(amsHumidity, sizeof(amsHumidity), "Feuchte %.1f %%",
+                 static_cast<double>(govee.humidityPct));
+        setLabelTextIfChanged(g_amsHumidity, amsHumidity);
+
+        char amsBattery[20];
+        snprintf(amsBattery, sizeof(amsBattery), "Akku %u %%",
+                 static_cast<unsigned>(govee.batteryPct));
+        setLabelTextIfChanged(g_amsBattery, amsBattery);
+    }
 
     if (!data.valid) {
         setLabelTextIfChanged(g_state, "Nicht verbunden");
@@ -147,7 +201,7 @@ void tick(uint32_t nowMs) {
     }
 
     char state[32];
-    snprintf(state, sizeof(state), "%s", stateText(data.state));
+    snprintf(state, sizeof(state), "%s", stateText(data));
     setLabelTextIfChanged(g_state, state);
 
     char percent[16];

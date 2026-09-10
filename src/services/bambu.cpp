@@ -9,6 +9,8 @@ namespace services {
 namespace {
 
 constexpr uint32_t kRetryMs = 60000;
+constexpr uint32_t kFullSyncRetryMs = 5000;
+constexpr uint32_t kFullSyncRefreshMs = 60000;
 constexpr uint16_t kMqttBufferSize = 4096;
 constexpr uint16_t kMqttOutputBufferSize = 1024;
 constexpr char kMqttUsername[] = "bblp";
@@ -38,6 +40,32 @@ BambuService g_bambu;
 
 void copyText(char *destination, size_t destinationSize, const char *source) {
     snprintf(destination, destinationSize, "%s", source == nullptr ? "" : source);
+}
+
+void sanitizeJobName(char *destination, size_t destinationSize, const char *rawName) {
+    if (rawName == nullptr || rawName[0] == '\0') {
+        destination[0] = '\0';
+        return;
+    }
+
+    const char *lastSlash = strrchr(rawName, '/');
+    const char *base = (lastSlash != nullptr) ? lastSlash + 1 : rawName;
+
+    char temp[96];
+    snprintf(temp, sizeof(temp), "%s", base);
+
+    // Dateiendungen (.gcode.3mf, .3mf, .gcode) entfernen
+    const char *suffixes[] = {".gcode.3mf", ".3mf", ".gcode"};
+    for (const char *suffix : suffixes) {
+        size_t nameLen = strlen(temp);
+        size_t suffixLen = strlen(suffix);
+        if (nameLen > suffixLen && strcasecmp(temp + nameLen - suffixLen, suffix) == 0) {
+            temp[nameLen - suffixLen] = '\0';
+            break;
+        }
+    }
+
+    snprintf(destination, destinationSize, "%s", temp);
 }
 
 } // namespace
@@ -220,12 +248,34 @@ void BambuService::handlePayload(const char *payload, size_t length) {
 
     BambuData next = snapshot();
     next.valid = true;
-    copyText(next.state, sizeof(next.state), print["gcode_state"] | "UNKNOWN");
-    const char *fileName = print["subtask_name"] | "";
-    if (fileName[0] == '\0') {
-        fileName = print["gcode_file"] | "";
+
+    // Nur ueberschreiben, wenn im aktuellen MQTT-Update vorhanden und nicht leer
+    if (print["gcode_state"].is<const char *>()) {
+        const char *stateVal = print["gcode_state"].as<const char *>();
+        if (stateVal != nullptr && stateVal[0] != '\0') {
+            copyText(next.state, sizeof(next.state), stateVal);
+        }
+    } else if (next.state[0] == '\0') {
+        copyText(next.state, sizeof(next.state), "UNKNOWN");
     }
-    copyText(next.fileName, sizeof(next.fileName), fileName);
+
+    const char *fileName = nullptr;
+    if (print["subtask_name"].is<const char *>()) {
+        const char *val = print["subtask_name"].as<const char *>();
+        if (val != nullptr && val[0] != '\0') {
+            fileName = val;
+        }
+    }
+    if (fileName == nullptr && print["gcode_file"].is<const char *>()) {
+        const char *val = print["gcode_file"].as<const char *>();
+        if (val != nullptr && val[0] != '\0') {
+            fileName = val;
+        }
+    }
+    if (fileName != nullptr) {
+        sanitizeJobName(next.fileName, sizeof(next.fileName), fileName);
+    }
+
     next.percent = print["mc_percent"] | next.percent;
     next.remainingMinutes = print["mc_remaining_time"] | next.remainingMinutes;
     next.currentLayer = print["layer_num"] | next.currentLayer;

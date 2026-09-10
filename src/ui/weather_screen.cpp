@@ -6,6 +6,7 @@
 #include "core/clock.h"
 #include "core/settings.h"
 #include "services/weather.h"
+#include "ui/dashboard.h"
 #include "ui/theme.h"
 
 namespace ui {
@@ -222,6 +223,11 @@ void formatForecastDay(const char *date, char *text, size_t textSize) {
              month);
 }
 
+void refreshCb(lv_event_t *) {
+    services::weather().refresh();
+    dashboard::toast("Wetter wird aktualisiert");
+}
+
 } // namespace
 
 void create(lv_obj_t *parent) {
@@ -248,7 +254,12 @@ void create(lv_obj_t *parent) {
     g_place = theme::label(current, &lv_font_montserrat_14, theme::muted(), "");
     lv_obj_set_pos(g_place, 12, 10);
     g_status = theme::label(current, &lv_font_montserrat_14, theme::muted(), "");
-    lv_obj_align(g_status, LV_ALIGN_TOP_RIGHT, -10, 10);
+    lv_obj_set_pos(g_status, 470, 14);
+    lv_obj_set_size(g_status, 104, 18);
+    lv_obj_set_style_text_align(g_status, LV_TEXT_ALIGN_RIGHT, 0);
+
+    lv_obj_t *refresh = theme::button(current, LV_SYMBOL_REFRESH, &lv_font_montserrat_20, 584, 6, 34, 34);
+    lv_obj_add_event_cb(refresh, refreshCb, LV_EVENT_CLICKED, nullptr);
 
     g_currentIcon = createWeatherIcon(current, 166, 104);
     lv_obj_set_pos(g_currentIcon.root, 12, 27);
@@ -258,7 +269,7 @@ void create(lv_obj_t *parent) {
     lv_obj_set_pos(g_temp, 194, 27);
     g_desc = theme::label(current, &lv_font_montserrat_24, theme::text(), "Keine Daten");
     lv_obj_set_pos(g_desc, 350, 38);
-    lv_obj_set_size(g_desc, 258, 30);
+    lv_obj_set_size(g_desc, 226, 30);
     lv_label_set_long_mode(g_desc, LV_LABEL_LONG_CLIP);
     g_feels = makeMetric(current, 194, 80, 148);
     g_range = makeMetric(current, 350, 80, 258);
